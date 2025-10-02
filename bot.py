@@ -18,8 +18,8 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")],
-        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],  # Nouveau bouton Instagram
-        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]  # Nouveau bouton Potato
+        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],
+        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]
     ]),
     "menu": InlineKeyboardMarkup([
         [InlineKeyboardButton("Hash 🍫", callback_data="hash")],
@@ -50,8 +50,8 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")],
-        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],  # Nouveau bouton Instagram
-        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]  # Nouveau bouton Potato
+        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],
+        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]
     ]),
     "meet_up": InlineKeyboardMarkup([
         [InlineKeyboardButton("Retour 🔙", callback_data="back")]
@@ -107,7 +107,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = KEYBOARD_CACHE["start"]
     logger.info(f"Envoi du menu initial avec boutons: {reply_markup.inline_keyboard}")
     try:
-        photo = MEDIA_CACHE.get("chat.jpg")
+        photo = MEDIA_CACHE.get("chat.JPG")
         if photo is None:
             logger.warning("Fichier chat.JPG non en cache, chargement direct")
             with open("chat.JPG", "rb") as image:
@@ -121,8 +121,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "*👉 Utilise les boutons ci-dessous 👇*"
             ))
     except FileNotFoundError:
-        logger.error("Fichier chat.jpg introuvable")
-        await update.message.reply_text("*Erreur : Image chat.jpg introuvable.*", parse_mode="Markdown")
+        logger.error("Fichier chat.JPG introuvable, envoi du message sans image")
+        await send_or_edit_message(update, context,
+            text=(
+                f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
+                "*/start - Pour redémarrer le Bot*\n"
+                "*Ce Bot te servira à consulter notre menu 📖*\n"
+                "*👉 Utilise les boutons ci-dessous 👇*"
+            ),
+            reply_markup=reply_markup)
 
 # Gestion du clic sur bouton
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -255,12 +262,12 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         name = user.first_name
         reply_markup = KEYBOARD_CACHE["back"]
         try:
-            photo = MEDIA_CACHE.get("chat.jpg")
+            photo = MEDIA_CACHE.get("chat.JPG")
             if photo is None:
-                logger.warning("Fichier chat.jpg non en cache, chargement direct")
-                with open("chat.jpg", "rb") as image:
+                logger.warning("Fichier chat.JPG non en cache, chargement direct")
+                with open("chat.JPG", "rb") as image:
                     photo = image.read()
-                    MEDIA_CACHE["chat.jpg"] = photo
+                    MEDIA_CACHE["chat.JPG"] = photo
             await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
                 caption=(
                     f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
@@ -269,22 +276,31 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "*👉 Utilise les boutons ci-dessous 👇*"
                 ))
         except FileNotFoundError:
-            logger.error("Fichier chat.jpg introuvable")
-            await query.message.reply_text("*Erreur : Image chat.jpg introuvable.*", parse_mode="Markdown")
+            logger.error("Fichier chat.JPG introuvable, envoi du message sans image")
+            await send_or_edit_message(update, context,
+                text=(
+                    f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
+                    "*/start - Pour redémarrer le Bot*\n"
+                    "*Ce Bot te servira à consulter notre menu 📖*\n"
+                    "*👉 Utilise les boutons ci-dessous 👇*"
+                ),
+                reply_markup=reply_markup)
 
 # /photo optionnel
 async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        photo = MEDIA_CACHE.get("chat.jpg")
+        photo = MEDIA_CACHE.get("chat.JPG")
         if photo is None:
-            logger.warning("Fichier chat.jpg non en cache, chargement direct")
-            with open("chat.jpg", "rb") as image:
+            logger.warning("Fichier chat.JPG non en cache, chargement direct")
+            with open("chat.JPG", "rb") as image:
                 photo = image.read()
-                MEDIA_CACHE["chat.jpg"] = photo
+                MEDIA_CACHE["chat.JPG"] = photo
         await send_or_edit_message(update, context, text="", photo=photo, caption="*Voici une jolie photo 📸*")
     except FileNotFoundError:
-        logger.error("Fichier chat.jpg introuvable")
-        await update.message.reply_text("*Erreur : Image chat.jpg introuvable.*", parse_mode="Markdown")
+        logger.error("Fichier chat.JPG introuvable, envoi du message sans image")
+        await send_or_edit_message(update, context,
+            text="*Impossible de charger l'image. Voici le menu :*",
+            reply_markup=KEYBOARD_CACHE["start"])
 
 if __name__ == "__main__":
     try:
