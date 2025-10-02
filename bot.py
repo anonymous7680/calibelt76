@@ -5,7 +5,7 @@ import asyncio
 import os
 
 # Charge les variables d'environnement (pour Render ou local avec .env)
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8297261611:AAFB0kKhr_HPwP89UKH4d5E1Jvl5EjZJ9Kw")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8139705130:AAH-3uo8OMmNS79hzWJFuLwYOdeDacfNch8")
 
 # Cache pour les fichiers médias
 MEDIA_CACHE = {}
