@@ -160,12 +160,12 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "barbe_noir":
         reply_markup = KEYBOARD_CACHE["hash_back"]
         try:
-            video = MEDIA_CACHE.get("barbe_noir.MP4")
+            video = MEDIA_CACHE.get("barbe_noir.mp4")
             if video is None:
                 logger.warning("Fichier barbe_noir.mp4 non en cache, chargement direct")
                 with open("barbe_noir.MP4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["barbe_noir.MP4"] = video
+                    MEDIA_CACHE["barbe_noir.mp4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*Barbe Noir 🏴‍☠️*\n\n"
@@ -184,9 +184,9 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             video = MEDIA_CACHE.get("hash_dry.MP4")
             if video is None:
                 logger.warning("Fichier hash_dry.mp4 non en cache, chargement direct")
-                with open("hash_dry.MP4", "rb") as video_file:
+                with open("hash_dry.mp4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["hash_dry.MP4"] = video
+                    MEDIA_CACHE["hash_dry.mp4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*Hash Dry 90u*\n\n"
@@ -213,7 +213,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logger.warning("Fichier cali_us.mp4 non en cache, chargement direct")
                 with open("cali_us.mp4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["cali_us.MP4"] = video
+                    MEDIA_CACHE["cali_us.mp4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*CALI US 🇺🇸*\n\n"
