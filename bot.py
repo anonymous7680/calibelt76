@@ -49,7 +49,7 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Service Livraison", callback_data="delivery")],
         [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
-        [InlineKeyboardButton("Canal telegram", url="https://t.me/+ayptPdxw1WEzNDVk")],
+        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")],
         [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],  # Nouveau bouton Instagram
         [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]  # Nouveau bouton Potato
     ]),
