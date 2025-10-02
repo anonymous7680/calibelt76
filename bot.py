@@ -25,6 +25,8 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("🔙 Retour", callback_data="back")]
     ]),
     "info": InlineKeyboardMarkup([
+        [InlineKeyboardButton("SERVICE MEET-UP 🏠", callback_data="meet_up")],
+        [InlineKeyboardButton("SERVICE L*VRA*SON 🚚", callback_data="livraison")],
         [InlineKeyboardButton("🔙 Retour", callback_data="back")]
     ]),
     "hash": InlineKeyboardMarkup([
@@ -37,14 +39,10 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Retour 🔙", callback_data="menu")]
     ]),
     "weed": InlineKeyboardMarkup([
-        [InlineKeyboardButton("🍍Pineapple", callback_data="pineapple")],
+        [InlineKeyboardButton("CALI US 🇺🇸", callback_data="cali_us")],
         [InlineKeyboardButton("🔙 Retour", callback_data="menu")]
     ]),
     "weed_back": InlineKeyboardMarkup([
-        [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
-        [InlineKeyboardButton("Retour 🔙", callback_data="weed")]
-    ]),
-    "pineapple_back": InlineKeyboardMarkup([
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Retour 🔙", callback_data="weed")]
     ]),
@@ -131,15 +129,31 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=KEYBOARD_CACHE["menu"])
     elif query.data == "info":
         await send_or_edit_message(update, context,
-            text="*Voici les informations du bot :*\n\n"
-                 "*✨ Merci de votre confiance ! ✨*\n"
-                 "*Chez [Dry.Coffee76], on répond rapidement à vos messages en privé 💬.*\n"
-                 "*On met un point d’honneur à vous offrir de la qualité au top à chaque commande 💎.*\n\n"
-                 "*⚠️ Pour toute demande de commande, merci de nous envoyer une vidéo :*\n"
-                 "*cela nous permet de garantir un meilleur suivi et plus de sécurité pour vous comme pour nous 🎥🔒.*\n\n"
-                 "*Au plaisir de vous satisfaire 💛*\n"
-                 "*Ce bot vous permet de consulter notre menu et de contacter notre équipe pour plus de détails.*\n"
-                 "*Pour toute question, contactez @Calibelt76.*",
+            text="*Choisis une option :*",
+            reply_markup=KEYBOARD_CACHE["info"])
+    elif query.data == "meet_up":
+        await send_or_edit_message(update, context,
+            text="*SERVICE MEET-UP 🏠*\n\n"
+                 "*ROUEN 76 📍*\n"
+                 "*-15% Pour Ta comande ✅*\n"
+                 "*Vous pouvez directement passer au meet-up la miff 🚶*\n"
+                 "*Prévenir et faire votre com*and Juste avant de passer en privé.*\n\n"
+                 "*Contact :*\n"
+                 "*@calibelt76 🐺*",
+            reply_markup=KEYBOARD_CACHE["info"])
+    elif query.data == "livraison":
+        await send_or_edit_message(update, context,
+            text="*SERVICE L*VRA*SON 🚚*\n\n"
+                 "*Livraison dans tout le 76 / 27 et 14 et Tout alentours De Normandie !🚗 🌆*\n"
+                 "*- 76 20-50€*\n"
+                 "*——————*\n"
+                 "*10 à 20e de frais selon La distance*\n"
+                 "*- 30klm 110€*\n"
+                 "*- 50Klm 230€*\n"
+                 "*- 100klm 350€*\n"
+                 "*- 150klm 450€*\n\n"
+                 "*Contact :*\n"
+                 "*@calibelt76 🐺*",
             reply_markup=KEYBOARD_CACHE["info"])
     elif query.data == "hash":
         await send_or_edit_message(update, context,
@@ -193,28 +207,27 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_or_edit_message(update, context,
             text="*Choisis une option pour Weed 🌳 :*",
             reply_markup=KEYBOARD_CACHE["weed"])
-    elif query.data == "pineapple":
-        reply_markup = KEYBOARD_CACHE["pineapple_back"]
+    elif query.data == "cali_us":
+        reply_markup = KEYBOARD_CACHE["weed_back"]
         try:
-            video = MEDIA_CACHE.get("pineapple.mp4")
+            video = MEDIA_CACHE.get("cali_us.mp4")
             if video is None:
-                logger.warning("Fichier pineapple.mp4 non en cache, chargement direct")
-                with open("pineapple.mp4", "rb") as video_file:
+                logger.warning("Fichier cali_us.mp4 non en cache, chargement direct")
+                with open("cali_us.mp4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["pineapple.mp4"] = video
+                    MEDIA_CACHE["cali_us.mp4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
-                caption="*🍍Pineapple*\n\n"
-                        "*TOP SHELF🏅*\n\n"
-                        "*🍍5G=60€*\n"
-                        "*🍍10G=100€*\n"
-                        "*🍍25G=180€*\n"
-                        "*🍍50G=340€*\n\n"
-                        "*Diffusent un parfum fruité d’ananas🍍, elle donne une sensation de relaxation légère☁️*\n",
+                caption="*CALI US 🇺🇸*\n\n"
+                        "*- Cherry Bomb 🍒🍦💣*\n"
+                        "*5G 70€*\n"
+                        "*10G 140€*\n"
+                        "*20G 270€*\n"
+                        "*25G 330€*\n",
                 reply_markup=reply_markup)
         except FileNotFoundError:
-            logger.error("Fichier pineapple.mp4 introuvable")
-            await query.message.reply_text("*Erreur : Vidéo pineapple.mp4 introuvable.*", parse_mode="Markdown")
+            logger.error("Fichier cali_us.mp4 introuvable")
+            await query.message.reply_text("*Erreur : Vidéo cali_us.mp4 introuvable.*", parse_mode="Markdown")
     elif query.data == "back":
         user = update.effective_user
         name = user.first_name
