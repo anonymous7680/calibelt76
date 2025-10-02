@@ -14,6 +14,7 @@ MEDIA_CACHE = {}
 KEYBOARD_CACHE = {
     "start": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
+        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],  # Nouveau bouton ajouté
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")]
     ]),
@@ -42,8 +43,12 @@ KEYBOARD_CACHE = {
     ]),
     "back": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
+        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],  # Ajouté pour cohérence
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Canal telegram", url="https://t.me/+ayptPdxw1WEzNDVk")]
+    ]),
+    "meet_up": InlineKeyboardMarkup([  # Nouveau clavier pour le retour depuis "Service Meet-Up"
+        [InlineKeyboardButton("Retour 🔙", callback_data="back")]
     ])
 }
 
@@ -119,6 +124,14 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_or_edit_message(update, context,
             text="*Choisis une option dans le menu :*",
             reply_markup=KEYBOARD_CACHE["menu"])
+    elif query.data == "meet_up":  # Gestion du nouveau bouton "Service Meet-Up"
+        await send_or_edit_message(update, context,
+            text="*SERVICE MEET-UP 🏠*\n\n"
+                 "*ROUEN 76 📍*\n\n"
+                 "Vous pouvez directement passer et meet-up la miff 🚶 ✈️\n\n"
+                 "Prévenir et faire votre com*and Juste avant de passer en privé.\n\n"
+                 "*@calibelt76 🐺*",
+            reply_markup=KEYBOARD_CACHE["meet_up"])
     elif query.data == "hash":
         await send_or_edit_message(update, context,
             text="*Choisis une option pour Hash 🍫 :*",
