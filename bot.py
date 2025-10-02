@@ -26,6 +26,7 @@ KEYBOARD_CACHE = {
     "hash": InlineKeyboardMarkup([
         [InlineKeyboardButton("Barbe Noir 73u 🏴‍☠️", callback_data="barbe_noir")],
         [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
+        [InlineKeyboardButton("Popeye armz 🗼🥇", callback_data="popeye_armz")],
         [InlineKeyboardButton("🔙 Retour", callback_data="menu")]
     ]),
     "hash_back": InlineKeyboardMarkup([
@@ -200,6 +201,25 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=reply_markup)
         else:
             await query.message.reply_text("*Erreur : Vidéo hash_dry.mp4 introuvable.*", parse_mode="Markdown")
+    elif query.data == "popeye_armz":
+        reply_markup = KEYBOARD_CACHE["hash_back"]
+        video = await load_media_file("popeye_armz.mp4", "video")
+        if video:
+            await send_or_edit_message(update, context,
+                text="", video=video,
+                caption=(
+                    "*Format [eggs 🥚]*\n\n"
+                    "*Popeye armz 🗼🥇*\n"
+                    "*Egss 10G*\n\n"
+                    "*- tiramisu 🧁☕️*\n"
+                    "*- zmo x papaya 🍬🥭*\n\n"
+                    "*5G 80€*\n"
+                    "*10G 160€*\n"
+                    "*25G 340€*"
+                ),
+                reply_markup=reply_markup)
+        else:
+            await query.message.reply_text("*Erreur : Vidéo popeye_armz.mp4 introuvable.*", parse_mode="Markdown")
     elif query.data == "weed":
         await send_or_edit_message(update, context,
             text="*Choisis une option pour Weed 🌳 :*",
