@@ -125,12 +125,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Commande /start reçue de {name}")
     reply_markup = KEYBOARD_CACHE["start"]
     try:
-        photo = MEDIA_CACHE.get("chat.jpg")
+        photo = MEDIA_CACHE.get("chat.JPG")
         if photo is None:
             logger.warning("Fichier chat.jpg non en cache, chargement direct")
             with open("chat.jpg", "rb") as image:
                 photo = image.read()
-                MEDIA_CACHE["chat.jpg"] = photo
+                MEDIA_CACHE["chat.JPG"] = photo
         await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
             caption=(
                 f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
