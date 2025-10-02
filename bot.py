@@ -163,7 +163,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             video = MEDIA_CACHE.get("barbe_noir.mp4")
             if video is None:
                 logger.warning("Fichier barbe_noir.mp4 non en cache, chargement direct")
-                with open("barbe_noir.MP4", "rb") as video_file:
+                with open("barbe_noir.mp4", "rb") as video_file:
                     video = video_file.read()
                     MEDIA_CACHE["barbe_noir.mp4"] = video
             await send_or_edit_message(update, context,
