@@ -137,9 +137,9 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption="*Barbe Noir 🏴‍☠️*\n\n"
                         "*73u*\n"
                         "*- Forbiden 🍑🍓🍉*\n"
-                        "*5G 60€*\n"
-                        "*10G 100€*\n"
-                        "*25G 240€*\n",
+                        "*-5G 60€*\n\n"
+                        "*-10G 100€*\n\n"
+                        "*-25G 240€*\n",
                 reply_markup=reply_markup)
         except FileNotFoundError:
             logger.error("Fichier barbe_noir.mp4 introuvable")
@@ -158,11 +158,11 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption="*Hash Dry 90u*\n\n"
                         "*- California 🌴🇺🇸*\n"
                         "*- Coco mangue 🥥🥭*\n"
-                        "*5G 70€*\n"
-                        "*10G 130€*\n"
-                        "*20G 270€*\n"
-                        "*25G 330€*\n"
-                        "*50G 430€*\n",
+                        "*-5G 70€*\n\n"
+                        "*-10G 130€*\n\n"
+                        "*-20G 270€*\n\n"
+                        "*-25G 330€*\n\n"
+                        "*-50G 430€*\n",
                 reply_markup=reply_markup)
         except FileNotFoundError:
             logger.error("Fichier hash_dry.mp4 introuvable")
@@ -182,9 +182,9 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "*Egss 10G*\n"
                         "*- Papaya Dawg 🥭🍉*\n"
                         "*- Chardonay Biscuit 🍪🍰*\n"
-                        "*5G 80€*\n"
-                        "*10G 160€*\n"
-                        "*25G 340€*\n",
+                        "*-5G 80€*\n\n"
+                        "*-10G 160€*\n\n"
+                        "*-25G 340€*\n",
                 reply_markup=reply_markup)
         except FileNotFoundError:
             logger.error("Fichier popeye_armz.mp4 introuvable")
@@ -206,10 +206,10 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text="", video=video,
                 caption="*CALI US 🇺🇸*\n\n"
                         "*- Cherry Bomb 🍒🍦💣*\n"
-                        "*5G 70€*\n"
-                        "*10G 140€*\n"
-                        "*20G 270€*\n"
-                        "*25G 330€*\n",
+                        "*-5G 70€*\n\n"
+                        "*-10G 140€*\n\n"
+                        "*-20G 270€*\n\n"
+                        "*-25G 330€*\n",
                 reply_markup=reply_markup)
         except FileNotFoundError:
             logger.error("Fichier cali_us.mp4 introuvable")
