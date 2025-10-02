@@ -45,7 +45,7 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
         [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],  # Ajouté pour cohérence
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
-        [InlineKeyboardButton("Canal telegram", url="https://t.me/+ayptPdxw1WEzNDVk")]
+        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")] 
     ]),
     "meet_up": InlineKeyboardMarkup([  # Nouveau clavier pour le retour depuis "Service Meet-Up"
         [InlineKeyboardButton("Retour 🔙", callback_data="back")]
