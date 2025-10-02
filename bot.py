@@ -16,8 +16,7 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
         [InlineKeyboardButton("Information", callback_data="info")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
-        [InlineKeyboardButton("Canal telegram", url="https://t.me/+ReFc7y_qhoMzNWE8")],
-        [InlineKeyboardButton("Canal Potato", url="https://ptdym198.org/joinchat/vlNUyjhhgWD8SfEaRTwUCQ")]
+        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")]
     ]),
     "menu": InlineKeyboardMarkup([
         [InlineKeyboardButton("Hash 🍫", callback_data="hash")],
