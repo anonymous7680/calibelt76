@@ -23,10 +23,6 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Weed 🌳", callback_data="weed")],
         [InlineKeyboardButton("🔙 Retour", callback_data="back")]
     ]),
-    "info": InlineKeyboardMarkup([
-        [InlineKeyboardButton("Information", callback_data="info_details")],
-        [InlineKeyboardButton("🔙 Retour", callback_data="back")]
-    ]),
     "hash": InlineKeyboardMarkup([
         [InlineKeyboardButton("Barbe Noir 73u 🏴‍☠️", callback_data="barbe_noir")],
         [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
@@ -126,10 +122,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=KEYBOARD_CACHE["menu"])
     elif query.data == "info":
         await send_or_edit_message(update, context,
-            text="*Choisis une option :*",
-            reply_markup=KEYBOARD_CACHE["info"])
-    elif query.data == "info_details":
-        await send_or_edit_message(update, context,
             text="*INFORMATION*\n\n"
                  "*SERVICE MEET-UP 🏠*\n"
                  "*ROUEN 76 📍*\n"
@@ -147,7 +139,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                  "*- 150klm 450€*\n\n"
                  "*Contact :*\n"
                  "*@calibelt76 🐺*",
-            reply_markup=KEYBOARD_CACHE["info"])
+            reply_markup=KEYBOARD_CACHE["back"])
     elif query.data == "hash":
         await send_or_edit_message(update, context,
             text="*Choisis une option pour Hash 🍫 :*",
