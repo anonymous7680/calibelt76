@@ -14,9 +14,12 @@ MEDIA_CACHE = {}
 KEYBOARD_CACHE = {
     "start": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
-        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],  # Nouveau bouton ajouté
+        [InlineKeyboardButton("Service Livraison", callback_data="delivery")],
+        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
-        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")]
+        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")],
+        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],  # Nouveau bouton Instagram
+        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]  # Nouveau bouton Potato
     ]),
     "menu": InlineKeyboardMarkup([
         [InlineKeyboardButton("Hash 🍫", callback_data="hash")],
@@ -43,11 +46,17 @@ KEYBOARD_CACHE = {
     ]),
     "back": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
-        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],  # Ajouté pour cohérence
+        [InlineKeyboardButton("Service Livraison", callback_data="delivery")],
+        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
-        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")] 
+        [InlineKeyboardButton("Canal telegram", url="https://t.me/+ayptPdxw1WEzNDVk")],
+        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],  # Nouveau bouton Instagram
+        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]  # Nouveau bouton Potato
     ]),
-    "meet_up": InlineKeyboardMarkup([  # Nouveau clavier pour le retour depuis "Service Meet-Up"
+    "meet_up": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Retour 🔙", callback_data="back")]
+    ]),
+    "delivery": InlineKeyboardMarkup([
         [InlineKeyboardButton("Retour 🔙", callback_data="back")]
     ])
 }
@@ -124,7 +133,21 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_or_edit_message(update, context,
             text="*Choisis une option dans le menu :*",
             reply_markup=KEYBOARD_CACHE["menu"])
-    elif query.data == "meet_up":  # Gestion du nouveau bouton "Service Meet-Up"
+    elif query.data == "delivery":
+        await send_or_edit_message(update, context,
+            text="*SERVICE L*VRA*SON 🚚*\n\n"
+                 "*Service Livraison dans toute la Normandie et c’est Alentour*\n"
+                 "*76 /27/14 et tout la Normandie ! 🗺️ 🚚*\n\n"
+                 "*76 30-50e*\n"
+                 "—————————\n"
+                 "*10 à 20e de Frais Par Klm.*\n\n"
+                 "*-30klm-110*\n\n"
+                 "*-50Klm - 250e*\n\n"
+                 "*-70klm- 340e*\n\n"
+                 "*-100Klm - 450e*\n\n"
+                 "*Contact: @calibelt76🐺*",
+            reply_markup=KEYBOARD_CACHE["delivery"])
+    elif query.data == "meet_up":
         await send_or_edit_message(update, context,
             text="*SERVICE MEET-UP 🏠*\n\n"
                  "*ROUEN 76 📍*\n\n"
