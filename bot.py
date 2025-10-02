@@ -172,7 +172,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text="", video=video,
                 caption="*Barbe Noir 🏴‍☠️*\n\n"
                         "*73u*\n"
-                        "*- Forbiden 🍑🍓🍉*\n"
+                        "*- Forbiden 🍑🍓🍉*\n\n"
                         "*-5G 60€*\n\n"
                         "*-10G 100€*\n\n"
                         "*-25G 240€*\n",
@@ -193,7 +193,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text="", video=video,
                 caption="*Hash Dry 90u*\n\n"
                         "*- California 🌴🇺🇸*\n"
-                        "*- Coco mangue 🥥🥭*\n"
+                        "*- Coco mangue 🥥🥭*\n\n"
                         "*-5G 70€*\n\n"
                         "*-10G 130€*\n\n"
                         "*-20G 270€*\n\n"
@@ -217,7 +217,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption="*Popeye armz 🗼🥇*\n\n"
                         "*Egss 10G*\n"
                         "*- Papaya Dawg 🥭🍉*\n"
-                        "*- Chardonay Biscuit 🍪🍰*\n"
+                        "*- Chardonay Biscuit 🍪🍰*\n\n"
                         "*-5G 80€*\n\n"
                         "*-10G 160€*\n\n"
                         "*-25G 340€*\n",
@@ -241,7 +241,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*CALI US 🇺🇸*\n\n"
-                        "*- Cherry Bomb 🍒🍦💣*\n"
+                        "*- Cherry Bomb 🍒🍦💣*\n\n"
                         "*-5G 70€*\n\n"
                         "*-10G 140€*\n\n"
                         "*-20G 270€*\n\n"
