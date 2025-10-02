@@ -14,7 +14,7 @@ MEDIA_CACHE = {}
 KEYBOARD_CACHE = {
     "start": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
-        [InlineKeyboardButton("Information", callback_data="info")],
+        [InlineKeyboardButton("Informations", callback_data="info")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")]
     ]),
@@ -42,7 +42,7 @@ KEYBOARD_CACHE = {
     ]),
     "back": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
-        [InlineKeyboardButton("Information", callback_data="info")],
+        [InlineKeyboardButton("Informations", callback_data="info")],
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Canal telegram", url="https://t.me/+ayptPdxw1WEzNDVk")]
     ])
@@ -55,12 +55,10 @@ logger = logging.getLogger(__name__)
 async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, reply_markup=None, photo=None, video=None, caption=None):
     chat = update.effective_chat
     logger.info(f"Envoi d'un message à {chat.id}")
-    # Vérifie si un message est déjà en cours d'envoi pour éviter les redondances
     if context.user_data.get('sending_message'):
         logger.warning("Message déjà en cours d'envoi, annulation.")
         return None
     context.user_data['sending_message'] = True
-    # Supprime le message précédent si stocké, sans bloquer
     last_message_id = context.user_data.get('last_bot_message_id')
     if last_message_id:
         try:
@@ -68,7 +66,6 @@ async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYP
             logger.info(f"Message {last_message_id} supprimé")
         except Exception as e:
             logger.warning(f"Erreur lors de la suppression du message {last_message_id}: {e}")
-    # Envoie un nouveau message
     try:
         if photo:
             sent_message = await chat.send_photo(photo=photo, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
@@ -86,32 +83,59 @@ async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYP
     finally:
         context.user_data['sending_message'] = False
 
-# /start avec bouton
+async def load_media_file(filename: str, media_type: str) -> bytes:
+    """Charge un fichier média et le met en cache, ou retourne None si introuvable."""
+    try:
+        media = MEDIA_CACHE.get(filename)
+        if media is None:
+            logger.warning(f"Fichier {filename} non en cache, chargement direct")
+            with open(filename, "rb") as file:
+                media = file.read()
+                MEDIA_CACHE[filename] = media
+        return media
+    except FileNotFoundError:
+        logger.error(f"Fichier {filename} introuvable")
+        return None
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     name = user.first_name
     logger.info(f"Commande /start reçue de {name}")
     reply_markup = KEYBOARD_CACHE["start"]
     logger.info(f"Envoi du menu initial avec boutons: {reply_markup.inline_keyboard}")
-    try:
-        photo = MEDIA_CACHE.get("chat.jpg")
-        if photo is None:
-            logger.warning("Fichier chat.jpg non en cache, chargement direct")
-            with open("chat.JPG", "rb") as image:
-                photo = image.read()
-                MEDIA_CACHE["chat.jpg"] = photo
+    photo = await load_media_file("chat.jpg", "image")
+    if photo:
         await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
             caption=(
                 f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
                 "*/start - Pour redémarrer le Bot*\n"
+                "*/help - Pour obtenir de l'aide*\n"
                 "*Ce Bot te servira à consulter notre menu 📖*\n"
                 "*👉 Utilise les boutons ci-dessous 👇*"
             ))
-    except FileNotFoundError:
-        logger.error("Fichier chat.jpg introuvable")
+    else:
         await update.message.reply_text("*Erreur : Image chat.jpg introuvable.*", parse_mode="Markdown")
 
-# Gestion du clic sur bouton
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Commande /help pour guider les utilisateurs."""
+    logger.info(f"Commande /help reçue de {update.effective_user.first_name}")
+    await send_or_edit_message(update, context,
+        text=(
+            "*Aide pour utiliser le Bot 📖*\n\n"
+            "Voici les commandes disponibles :\n"
+            "*/start* - Démarre le bot et affiche le menu principal.\n"
+            "*/help* - Affiche cette aide.\n"
+            "*/photo* - Envoie une photo.\n\n"
+            "*Navigation* :\n"
+            "- Utilise les boutons pour explorer le menu (Hash 🍫, Weed 🌳).\n"
+            "- Clique sur *Informations* pour les détails sur les meet-ups et livraisons.\n"
+            "- Clique sur *Contact* pour discuter avec @Calibelt76.\n"
+            "- Rejoins notre *Canal Telegram* pour plus d'infos.\n\n"
+            "Si tu rencontres un problème, contacte @Calibelt76 directement."
+        ),
+        reply_markup=KEYBOARD_CACHE["start"]
+    )
+
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -120,25 +144,25 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_or_edit_message(update, context,
             text="*Choisis une option dans le menu :*",
             reply_markup=KEYBOARD_CACHE["menu"])
-    elif query.data == "Information":
+    elif query.data == "info":
         await send_or_edit_message(update, context,
-            text="*INFORMATION*\n\n"
-                 "*SERVICE MEET-UP 🏠*\n"
-                 "*ROUEN 76 📍*\n"
-                 "*-15% Pour Ta comande ✅*\n"
-                 "*Vous pouvez directement passer au meet-up la miff 🚶*\n"
-                 "*Prévenir et faire votre com*and Juste avant de passer en privé.*\n\n"
-                 "*SERVICE L*VRA*SON 🚚*\n"
-                 "*Livraison dans tout le 76 / 27 et 14 et Tout alentours De Normandie !🚗 🌆*\n"
-                 "*- 76 20-50€*\n"
-                 "*——————*\n"
-                 "*10 à 20e de frais selon La distance*\n"
-                 "*- 30klm 110€*\n"
-                 "*- 50Klm 230€*\n"
-                 "*- 100klm 350€*\n"
-                 "*- 150klm 450€*\n\n"
-                 "*Contact :*\n"
-                 "*@calibelt76 🐺*",
+            text=(
+                "*SERVICE MEET-UP 🏠*\n\n"
+                "*ROUEN 76 📍*\n"
+                "*Vous pouvez directement passer et meet-up la miff 🚶 ✈️*\n"
+                "*Prévenir et faire votre com*and Juste avant de passer en privé.*\n\n"
+                "*SERVICE L*VRA*SON 🚚*\n\n"
+                "*Service Livraison dans toute la Normandie et c’est Alentour*\n"
+                "*76 /27/14 et tout la Normandie ! 🗺️ 🚚*\n\n"
+                "*76 30-50e*\n"
+                "*—————————*\n"
+                "*10 à 20e de Frais Par Klm.*\n\n"
+                "*-30klm-110*\n"
+                "*- 50Klm - 250e*\n"
+                "*- 70klm- 340e*\n"
+                "*- 100Klm - 450e*\n\n"
+                "*Contact: @calibelt76🐺*"
+            ),
             reply_markup=KEYBOARD_CACHE["back"])
     elif query.data == "hash":
         await send_or_edit_message(update, context,
@@ -146,13 +170,8 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=KEYBOARD_CACHE["hash"])
     elif query.data == "barbe_noir":
         reply_markup = KEYBOARD_CACHE["hash_back"]
-        try:
-            video = MEDIA_CACHE.get("barbe_noir.mp4")
-            if video is None:
-                logger.warning("Fichier barbe_noir.mp4 non en cache, chargement direct")
-                with open("barbe_noir.mp4", "rb") as video_file:
-                    video = video_file.read()
-                    MEDIA_CACHE["barbe_noir.mp4"] = video
+        video = await load_media_file("barbe_noir.mp4", "video")
+        if video:
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*Barbe Noir 🏴‍☠️*\n\n"
@@ -162,18 +181,12 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "*10G 100€*\n"
                         "*25G 240€*\n",
                 reply_markup=reply_markup)
-        except FileNotFoundError:
-            logger.error("Fichier barbe_noir.mp4 introuvable")
+        else:
             await query.message.reply_text("*Erreur : Vidéo barbe_noir.mp4 introuvable.*", parse_mode="Markdown")
     elif query.data == "hash_dry":
         reply_markup = KEYBOARD_CACHE["hash_back"]
-        try:
-            video = MEDIA_CACHE.get("hash_dry.MP4")
-            if video is None:
-                logger.warning("Fichier hash_dry.mp4 non en cache, chargement direct")
-                with open("hash_dry.mp4", "rb") as video_file:
-                    video = video_file.read()
-                    MEDIA_CACHE["hash_dry.mp4"] = video
+        video = await load_media_file("hash_dry.mp4", "video")
+        if video:
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*Hash Dry 90u*\n\n"
@@ -185,8 +198,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "*25G 330€*\n"
                         "*50G 430€*\n",
                 reply_markup=reply_markup)
-        except FileNotFoundError:
-            logger.error("Fichier hash_dry.mp4 introuvable")
+        else:
             await query.message.reply_text("*Erreur : Vidéo hash_dry.mp4 introuvable.*", parse_mode="Markdown")
     elif query.data == "weed":
         await send_or_edit_message(update, context,
@@ -194,13 +206,8 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=KEYBOARD_CACHE["weed"])
     elif query.data == "cali_us":
         reply_markup = KEYBOARD_CACHE["weed_back"]
-        try:
-            video = MEDIA_CACHE.get("cali_us.MP4")
-            if video is None:
-                logger.warning("Fichier cali_us.mp4 non en cache, chargement direct")
-                with open("cali_us.mp4", "rb") as video_file:
-                    video = video_file.read()
-                    MEDIA_CACHE["cali_us.mp4"] = video
+        video = await load_media_file("cali_us.mp4", "video")
+        if video:
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*CALI US 🇺🇸*\n\n"
@@ -210,43 +217,30 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "*20G 270€*\n"
                         "*25G 330€*\n",
                 reply_markup=reply_markup)
-        except FileNotFoundError:
-            logger.error("Fichier cali_us.mp4 introuvable")
+        else:
             await query.message.reply_text("*Erreur : Vidéo cali_us.mp4 introuvable.*", parse_mode="Markdown")
     elif query.data == "back":
         user = update.effective_user
         name = user.first_name
         reply_markup = KEYBOARD_CACHE["back"]
-        try:
-            photo = MEDIA_CACHE.get("chat.jpg")
-            if photo is None:
-                logger.warning("Fichier chat.jpg non en cache, chargement direct")
-                with open("chat.jpg", "rb") as image:
-                    photo = image.read()
-                    MEDIA_CACHE["chat.jpg"] = photo
+        photo = await load_media_file("chat.jpg", "image")
+        if photo:
             await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
                 caption=(
                     f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
                     "*/start - Pour redémarrer le Bot*\n"
+                    "*/help - Pour obtenir de l'aide*\n"
                     "*Ce Bot te servira à consulter notre menu 📖*\n"
                     "*👉 Utilise les boutons ci-dessous 👇*"
                 ))
-        except FileNotFoundError:
-            logger.error("Fichier chat.jpg introuvable")
+        else:
             await query.message.reply_text("*Erreur : Image chat.jpg introuvable.*", parse_mode="Markdown")
 
-# /photo optionnel
 async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        photo = MEDIA_CACHE.get("chat.jpg")
-        if photo is None:
-            logger.warning("Fichier chat.jpg non en cache, chargement direct")
-            with open("chat.jpg", "rb") as image:
-                photo = image.read()
-                MEDIA_CACHE["chat.jpg"] = photo
+    photo = await load_media_file("chat.jpg", "image")
+    if photo:
         await send_or_edit_message(update, context, text="", photo=photo, caption="*Voici une jolie photo 📸*")
-    except FileNotFoundError:
-        logger.error("Fichier chat.jpg introuvable")
+    else:
         await update.message.reply_text("*Erreur : Image chat.jpg introuvable.*", parse_mode="Markdown")
 
 if __name__ == "__main__":
@@ -254,10 +248,10 @@ if __name__ == "__main__":
         app = ApplicationBuilder().token(BOT_TOKEN).build()
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("photo", send_photo))
+        app.add_handler(CommandHandler("help", help_command))
         app.add_handler(CallbackQueryHandler(button_click))
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
-        # Ajout d'un timeout pour éviter un blocage infini
         asyncio.run(app.run_polling(timeout=30, drop_pending_updates=True))
     except ValueError as e:
         logger.error(f"Erreur : Token invalide - {e}")
