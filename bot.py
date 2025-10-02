@@ -103,7 +103,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         photo = MEDIA_CACHE.get("chat.jpg")
         if photo is None:
             logger.warning("Fichier chat.jpg non en cache, chargement direct")
-            with open("chat.jpg", "rb") as image:
+            with open("chat.JPG", "rb") as image:
                 photo = image.read()
                 MEDIA_CACHE["chat.jpg"] = photo
         await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
