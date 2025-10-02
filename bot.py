@@ -120,7 +120,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_or_edit_message(update, context,
             text="*Choisis une option dans le menu :*",
             reply_markup=KEYBOARD_CACHE["menu"])
-    elif query.data == "info":
+    elif query.data == "Information":
         await send_or_edit_message(update, context,
             text="*INFORMATION*\n\n"
                  "*SERVICE MEET-UP 🏠*\n"
