@@ -3,7 +3,19 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Callb
 import logging
 import asyncio
 import os
+import json
 from datetime import timedelta
+
+# Configuration du logging avec fichier
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler("bot.log"),  # Sauvegarde les logs dans bot.log
+        logging.StreamHandler()  # Affiche aussi dans la console
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # Charge les variables d'environnement
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8139705130:AAH-3uo8OMmNS79hzWJFuLwYOdeDacfNch8")
@@ -14,7 +26,22 @@ MEDIA_CACHE = {}
 # Ensemble pour stocker les IDs des utilisateurs ayant utilisé le bot
 USER_IDS = set()
 
-# Cache pour les claviers réutilisés (inchangé du code original)
+# Fonction pour charger les utilisateurs depuis un fichier JSON
+def load_users():
+    try:
+        with open("users.json", "r") as f:
+            USER_IDS.update(json.load(f))
+        logger.info(f"Chargement de {len(USER_IDS)} utilisateurs depuis users.json")
+    except FileNotFoundError:
+        logger.info("Fichier users.json non trouvé, démarrage avec une liste vide")
+
+# Fonction pour sauvegarder les utilisateurs dans un fichier JSON
+def save_users():
+    with open("users.json", "w") as f:
+        json.dump(list(USER_IDS), f)
+    logger.info("Utilisateurs sauvegardés dans users.json")
+
+# Cache pour les claviers réutilisés
 KEYBOARD_CACHE = {
     "start": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
@@ -65,63 +92,6 @@ KEYBOARD_CACHE = {
     ])
 }
 
-# Active le logging pour déboguer
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Fonction pour envoyer une annonce à tous les utilisateurs
-async def send_announcement(context: ContextTypes.DEFAULT_TYPE):
-    # Remplacez ceci par votre propre annonce
-    announcement = "*📢 Nouvelle annonce !*\nConsultez nos dernières offres en cliquant sur le menu ci-dessous !\nContactez-nous : @Calibelt76 🐺"
-    logger.info("Envoi d'une annonce à tous les utilisateurs")
-    for user_id in USER_IDS:
-        try:
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=announcement,
-                parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("📋 Voir le Menu", callback_data="menu")],
-                    [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")]
-                ])
-            )
-            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
-
-# /start avec ajout de l'utilisateur à la liste
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    name = user.first_name
-    # Ajoute l'ID de l'utilisateur à la liste
-    USER_IDS.add(user.id)
-    logger.info(f"Commande /start reçue de {name}, ID ajouté: {user.id}")
-    reply_markup = KEYBOARD_CACHE["start"]
-    try:
-        photo = MEDIA_CACHE.get("chat.JPG")
-        if photo is None:
-            logger.warning("Fichier chat.JPG non en cache, chargement direct")
-            with open("chat.JPG", "rb") as image:
-                photo = image.read()
-                MEDIA_CACHE["chat.JPG"] = photo
-        await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
-            caption=(
-                f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
-                "*/start - Pour redémarrer le Bot*\n"
-                "*Ce Bot te servira à consulter notre menu 📖*\n"
-                "*👉 Utilise les boutons ci-dessous 👇*"
-            ))
-    except FileNotFoundError:
-        logger.error("Fichier chat.JPG introuvable, envoi du message sans image")
-        await send_or_edit_message(update, context,
-            text=(
-                f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
-                "*/start - Pour redémarrer le Bot*\n"
-                "*Ce Bot te servira à consulter notre menu 📖*\n"
-                "*👉 Utilise les boutons ci-dessous 👇*"
-            ),
-            reply_markup=reply_markup)
-
 async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, reply_markup=None, photo=None, video=None, caption=None):
     chat = update.effective_chat
     logger.info(f"Envoi d'un message à {chat.id}")
@@ -153,11 +123,99 @@ async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYP
     finally:
         context.user_data['sending_message'] = False
 
-# Gestion du clic sur bouton (inchangé, mais inclus pour complétude)
+# Fonction pour envoyer une annonce
+async def send_announcement(context: ContextTypes.DEFAULT_TYPE):
+    announcement = "*📢 Nouvelle annonce !*\nConsultez nos dernières offres en cliquant sur le menu ci-dessous !\nContactez-nous : @Calibelt76 🐺"  # Personnalise ici
+    logger.info("Envoi d'une annonce à tous les utilisateurs")
+    for user_id in USER_IDS:
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=announcement,
+                parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📋 Voir le Menu", callback_data="menu")],
+                    [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")]
+                ])
+            )
+            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
+
+# /start avec log du @username
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    name = user.first_name
+    username = user.username
+    username_str = f"@{username}" if username else "Pas de @"
+    USER_IDS.add(user.id)
+    save_users()  # Sauvegarde après ajout
+    logger.info(f"Commande /start reçue de {name} ({username_str}), ID ajouté: {user.id}")
+    reply_markup = KEYBOARD_CACHE["start"]
+    try:
+        photo = MEDIA_CACHE.get("chat.JPG")
+        if photo is None:
+            logger.warning("Fichier chat.JPG non en cache, chargement direct")
+            with open("chat.JPG", "rb") as image:
+                photo = image.read()
+                MEDIA_CACHE["chat.JPG"] = photo
+        await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
+            caption=(
+                f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
+                "*/start - Pour redémarrer le Bot*\n"
+                "*Ce Bot te servira à consulter notre menu 📖*\n"
+                "*👉 Utilise les boutons ci-dessous 👇*"
+            ))
+    except FileNotFoundError:
+        logger.error("Fichier chat.JPG introuvable, envoi du message sans image")
+        await send_or_edit_message(update, context,
+            text=(
+                f"*Bienvenue {name} sur notre Bot Télégram 📱*\n\n"
+                "*/start - Pour redémarrer le Bot*\n"
+                "*Ce Bot te servira à consulter notre menu 📖*\n"
+                "*👉 Utilise les boutons ci-dessous 👇*"
+            ),
+            reply_markup=reply_markup)
+
+# /listusers pour admin
+async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    ADMIN_ID = 123456789  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
+    if user.id != ADMIN_ID:
+        await update.message.reply_text("Désolé, cette commande est réservée aux administrateurs.")
+        logger.info(f"Tentative /listusers par non-admin {user.id}")
+        return
+    if not USER_IDS:
+        await update.message.reply_text("Aucun utilisateur n'a utilisé le bot pour le moment.")
+        logger.info("Commande /listusers exécutée : aucun utilisateur")
+    else:
+        user_list = "\n".join([f"ID: {uid}" for uid in USER_IDS])
+        await update.message.reply_text(f"Utilisateurs ayant utilisé le bot :\n{user_list}")
+        logger.info(f"Commande /listusers exécutée par admin {user.id} - {len(USER_IDS)} utilisateurs")
+
+# /stop pour se désinscrire des annonces
+async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    username = update.effective_user.username
+    username_str = f"@{username}" if username else "Pas de @"
+    if user_id in USER_IDS:
+        USER_IDS.remove(user_id)
+        save_users()
+        await update.message.reply_text("Vous ne recevrez plus d'annonces. Utilisez /start pour vous réinscrire.")
+        logger.info(f"Utilisateur {username_str} (ID: {user_id}) s'est désinscrit des annonces")
+    else:
+        await update.message.reply_text("Vous n'êtes pas inscrit aux annonces.")
+        logger.info(f"Utilisateur {username_str} (ID: {user_id}) a tenté de se désinscrire mais n'était pas inscrit")
+
+# Gestion des clics sur boutons avec log du @username
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    user = update.effective_user
+    name = user.first_name
+    username = user.username
+    username_str = f"@{username}" if username else "Pas de @"
     await query.answer()
-    logger.info(f"Bouton cliqué : {query.data}")
+    logger.info(f"Bouton cliqué '{query.data}' par {name} ({username_str}), ID: {user.id}")
     if query.data == "menu":
         await send_or_edit_message(update, context,
             text="*Choisis une option dans le menu :*",
@@ -282,6 +340,9 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "back":
         user = update.effective_user
         name = user.first_name
+        username = user.username
+        username_str = f"@{username}" if username else "Pas de @"
+        logger.info(f"Bouton 'back' cliqué par {name} ({username_str}), ID: {user.id}")
         reply_markup = KEYBOARD_CACHE["back"]
         try:
             photo = MEDIA_CACHE.get("chat.JPG")
@@ -308,8 +369,12 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 ),
                 reply_markup=reply_markup)
 
-# /photo optionnel (inchangé)
+# /photo optionnel
 async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    username = user.username
+    username_str = f"@{username}" if username else "Pas de @"
+    logger.info(f"Commande /photo exécutée par {user.first_name} ({username_str}), ID: {user.id}")
     try:
         photo = MEDIA_CACHE.get("chat.JPG")
         if photo is None:
@@ -326,21 +391,23 @@ async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Fonction pour initialiser la tâche planifiée
 def schedule_announcements(context: ContextTypes.DEFAULT_TYPE):
-    # Planifie l'envoi toutes les 24 heures (86400 secondes)
     context.job_queue.run_repeating(
         callback=send_announcement,
         interval=timedelta(days=1),
-        first=10  # Premier envoi 10 secondes après le démarrage
+        first=10
     )
     logger.info("Tâche d'envoi d'annonces planifiée toutes les 24 heures")
 
 if __name__ == "__main__":
     try:
+        # Charge les utilisateurs au démarrage
+        load_users()
         app = ApplicationBuilder().token(BOT_TOKEN).build()
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("photo", send_photo))
+        app.add_handler(CommandHandler("listusers", list_users))
+        app.add_handler(CommandHandler("stop", stop))
         app.add_handler(CallbackQueryHandler(button_click))
-        # Ajoute la planification des annonces
         app.job_queue.run_once(schedule_announcements, when=0)
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
