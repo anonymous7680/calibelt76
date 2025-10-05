@@ -1,16 +1,20 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, JobQueue
 import logging
 import asyncio
 import os
+from datetime import timedelta
 
-# Charge les variables d'environnement (pour Render ou local avec .env)
+# Charge les variables d'environnement
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8139705130:AAH-3uo8OMmNS79hzWJFuLwYOdeDacfNch8")
 
 # Cache pour les fichiers médias
 MEDIA_CACHE = {}
 
-# Cache pour les claviers réutilisés
+# Ensemble pour stocker les IDs des utilisateurs ayant utilisé le bot
+USER_IDS = set()
+
+# Cache pour les claviers réutilisés (inchangé du code original)
 KEYBOARD_CACHE = {
     "start": InlineKeyboardMarkup([
         [InlineKeyboardButton("📋 Menu", callback_data="menu")],
@@ -65,47 +69,34 @@ KEYBOARD_CACHE = {
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, reply_markup=None, photo=None, video=None, caption=None):
-    chat = update.effective_chat
-    logger.info(f"Envoi d'un message à {chat.id}")
-    # Vérifie si un message est déjà en cours d'envoi pour éviter les redondances
-    if context.user_data.get('sending_message'):
-        logger.warning("Message déjà en cours d'envoi, annulation.")
-        return None
-    context.user_data['sending_message'] = True
-    # Supprime le message précédent si stocké, sans bloquer
-    last_message_id = context.user_data.get('last_bot_message_id')
-    if last_message_id:
+# Fonction pour envoyer une annonce à tous les utilisateurs
+async def send_announcement(context: ContextTypes.DEFAULT_TYPE):
+    # Remplacez ceci par votre propre annonce
+    announcement = "*📢 Nouvelle annonce !*\nConsultez nos dernières offres en cliquant sur le menu ci-dessous !\nContactez-nous : @Calibelt76 🐺"
+    logger.info("Envoi d'une annonce à tous les utilisateurs")
+    for user_id in USER_IDS:
         try:
-            await asyncio.shield(chat.delete_message(last_message_id))
-            logger.info(f"Message {last_message_id} supprimé")
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=announcement,
+                parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📋 Voir le Menu", callback_data="menu")],
+                    [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")]
+                ])
+            )
+            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
         except Exception as e:
-            logger.warning(f"Erreur lors de la suppression du message {last_message_id}: {e}")
-    # Envoie un nouveau message
-    try:
-        if photo:
-            sent_message = await chat.send_photo(photo=photo, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
-        elif video:
-            sent_message = await chat.send_video(video=video, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
-        else:
-            sent_message = await chat.send_message(text=text, reply_markup=reply_markup, parse_mode="Markdown")
-        context.user_data['last_bot_message_id'] = sent_message.message_id
-        logger.info(f"Nouveau message envoyé, ID: {sent_message.message_id}")
-        return sent_message
-    except Exception as e:
-        logger.error(f"Erreur lors de l'envoi du message: {e}")
-        await chat.send_message("*Une erreur s'est produite. Essaie à nouveau.*", parse_mode="Markdown")
-        return None
-    finally:
-        context.user_data['sending_message'] = False
+            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
 
-# /start avec bouton
+# /start avec ajout de l'utilisateur à la liste
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     name = user.first_name
-    logger.info(f"Commande /start reçue de {name}")
+    # Ajoute l'ID de l'utilisateur à la liste
+    USER_IDS.add(user.id)
+    logger.info(f"Commande /start reçue de {name}, ID ajouté: {user.id}")
     reply_markup = KEYBOARD_CACHE["start"]
-    logger.info(f"Envoi du menu initial avec boutons: {reply_markup.inline_keyboard}")
     try:
         photo = MEDIA_CACHE.get("chat.JPG")
         if photo is None:
@@ -131,7 +122,38 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ),
             reply_markup=reply_markup)
 
-# Gestion du clic sur bouton
+async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, reply_markup=None, photo=None, video=None, caption=None):
+    chat = update.effective_chat
+    logger.info(f"Envoi d'un message à {chat.id}")
+    if context.user_data.get('sending_message'):
+        logger.warning("Message déjà en cours d'envoi, annulation.")
+        return None
+    context.user_data['sending_message'] = True
+    last_message_id = context.user_data.get('last_bot_message_id')
+    if last_message_id:
+        try:
+            await asyncio.shield(chat.delete_message(last_message_id))
+            logger.info(f"Message {last_message_id} supprimé")
+        except Exception as e:
+            logger.warning(f"Erreur lors de la suppression du message {last_message_id}: {e}")
+    try:
+        if photo:
+            sent_message = await chat.send_photo(photo=photo, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
+        elif video:
+            sent_message = await chat.send_video(video=video, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
+        else:
+            sent_message = await chat.send_message(text=text, reply_markup=reply_markup, parse_mode="Markdown")
+        context.user_data['last_bot_message_id'] = sent_message.message_id
+        logger.info(f"Nouveau message envoyé, ID: {sent_message.message_id}")
+        return sent_message
+    except Exception as e:
+        logger.error(f"Erreur lors de l'envoi du message: {e}")
+        await chat.send_message("*Une erreur s'est produite. Essaie à nouveau.*", parse_mode="Markdown")
+        return None
+    finally:
+        context.user_data['sending_message'] = False
+
+# Gestion du clic sur bouton (inchangé, mais inclus pour complétude)
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -286,7 +308,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 ),
                 reply_markup=reply_markup)
 
-# /photo optionnel
+# /photo optionnel (inchangé)
 async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         photo = MEDIA_CACHE.get("chat.JPG")
@@ -302,15 +324,26 @@ async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="*Impossible de charger l'image. Voici le menu :*",
             reply_markup=KEYBOARD_CACHE["start"])
 
+# Fonction pour initialiser la tâche planifiée
+def schedule_announcements(context: ContextTypes.DEFAULT_TYPE):
+    # Planifie l'envoi toutes les 24 heures (86400 secondes)
+    context.job_queue.run_repeating(
+        callback=send_announcement,
+        interval=timedelta(days=1),
+        first=10  # Premier envoi 10 secondes après le démarrage
+    )
+    logger.info("Tâche d'envoi d'annonces planifiée toutes les 24 heures")
+
 if __name__ == "__main__":
     try:
         app = ApplicationBuilder().token(BOT_TOKEN).build()
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("photo", send_photo))
         app.add_handler(CallbackQueryHandler(button_click))
+        # Ajoute la planification des annonces
+        app.job_queue.run_once(schedule_announcements, when=0)
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
-        # Ajout d'un timeout pour éviter un blocage infini
         asyncio.run(app.run_polling(timeout=30, drop_pending_updates=True))
     except ValueError as e:
         logger.error(f"Erreur : Token invalide - {e}")
