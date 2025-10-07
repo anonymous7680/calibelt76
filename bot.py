@@ -281,11 +281,11 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 caption="*Hash Dry 90u*\n\n"
                         "*- California 🌴🇺🇸*\n"
                         "*- Coco mangue 🥥🥭*\n\n"
-                        "*-5G 70€*\n\n"
-                        "*-10G 130€*\n\n"
-                        "*-20G 270€*\n\n"
-                        "*-25G 330€*\n\n"
-                        "*-50G 430€*\n",
+                        "*-5G 50€*\n\n"
+                        "*-10G 80€*\n\n"
+                        "*-20G 160€*\n\n"
+                        "*-25G 200€*\n\n"
+                        "*-50G 350€*\n",
                 reply_markup=reply_markup)
         except FileNotFoundError:
             logger.error("Fichier hash_dry.mp4 introuvable")
