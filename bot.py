@@ -123,25 +123,6 @@ async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYP
     finally:
         context.user_data['sending_message'] = False
 
-# Fonction pour envoyer une annonce
-async def send_announcement(context: ContextTypes.DEFAULT_TYPE):
-    announcement = "*📢 Nouvelle annonce !*\nConsultez nos dernières offres en cliquant sur le menu ci-dessous !\nContactez-nous : @Calibelt76 🐺"  # Personnalise ici
-    logger.info("Envoi d'une annonce à tous les utilisateurs")
-    for user_id in USER_IDS:
-        try:
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=announcement,
-                parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("📋 Voir le Menu", callback_data="menu")],
-                    [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")]
-                ])
-            )
-            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
-
 # /start avec log du @username
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -193,7 +174,7 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Utilisateurs ayant utilisé le bot :\n{user_list}")
         logger.info(f"Commande /listusers exécutée par admin {user.id} - {len(USER_IDS)} utilisateurs")
 
-# /stop pour se désinscrire des annonces
+# /stop pour se désinscrire des annonces (optionnel, peut être conservé ou supprimé)
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     username = update.effective_user.username
@@ -389,15 +370,6 @@ async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="*Impossible de charger l'image. Voici le menu :*",
             reply_markup=KEYBOARD_CACHE["start"])
 
-# Fonction pour initialiser la tâche planifiée
-def schedule_announcements(context: ContextTypes.DEFAULT_TYPE):
-    context.job_queue.run_repeating(
-        callback=send_announcement,
-        interval=timedelta(days=1),
-        first=10
-    )
-    logger.info("Tâche d'envoi d'annonces planifiée toutes les 24 heures")
-
 if __name__ == "__main__":
     try:
         # Charge les utilisateurs au démarrage
@@ -408,7 +380,8 @@ if __name__ == "__main__":
         app.add_handler(CommandHandler("listusers", list_users))
         app.add_handler(CommandHandler("stop", stop))
         app.add_handler(CallbackQueryHandler(button_click))
-        app.job_queue.run_once(schedule_announcements, when=0)
+        # Commenté pour désactiver les annonces
+        # app.job_queue.run_once(schedule_announcements, when=0)
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
         asyncio.run(app.run_polling(timeout=30, drop_pending_updates=True))
