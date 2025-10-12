@@ -190,84 +190,6 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Vous n'êtes pas inscrit aux annonces.")
         logger.info(f"Utilisateur {username_str} (ID: {user_id}) a tenté de se désinscrire mais n'était pas inscrit")
 
-# NOUVELLE FONCTION : Annonce pour le nouvel arrivage
-async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    ADMIN_ID = 123456789  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
-    if user.id != ADMIN_ID:
-        await update.message.reply_text("Désolé, cette commande est réservée aux administrateurs.")
-        logger.info(f"Tentative /announce par non-admin {user.id}")
-        return
-    if not USER_IDS:
-        await update.message.reply_text("Aucun utilisateur à notifier.")
-        logger.info("Commande /announce exécutée : aucun utilisateur")
-        return
-    announcement_text = (
-        "*🔥 NOUVEL ARRIVAGE ! 🔥*\n\n"
-        "Découvrez notre nouveau produit : *90u kgf Frozen 🧊*\n\n"
-        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
-        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
-        "*-Lamponi 🍦🍓*\n\n"
-        "*-5G 70€*\n"
-        "*-10G 130€*\n"
-        "*-20G 240€*\n"
-        "*-25G 270€*\n\n"
-        "Consultez le menu avec /start pour plus de détails ! 📋"
-    )
-    success_count = 0
-    failed_count = 0
-    for user_id in USER_IDS:
-        try:
-            await context.bot.send_message(
-                chat_id=user_id,
-                text=announcement_text,
-                parse_mode="Markdown"
-            )
-            success_count += 1
-            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
-            failed_count += 1
-    await update.message.reply_text(
-        f"Annonce envoyée avec succès à {success_count} utilisateurs. "
-        f"Échecs : {failed_count}."
-    )
-    logger.info(f"Commande /announce exécutée par admin {user.id} - Succès: {success_count}, Échecs: {failed_count}")
-
-# Fonction pour envoyer l'annonce à tous les utilisateurs au démarrage
-async def send_startup_announcement(app):
-    load_users()  # Charger les utilisateurs depuis users.json
-    if not USER_IDS:
-        logger.info("Aucune annonce envoyée : aucun utilisateur dans USER_IDS")
-        return
-    announcement_text = (
-        "*🔥 NOUVEL ARRIVAGE ! 🔥*\n\n"
-        "Découvrez notre nouveau produit : *90u kgf Frozen 🧊*\n\n"
-        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
-        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
-        "*-Lamponi 🍦🍓*\n\n"
-        "*-5G 70€*\n"
-        "*-10G 130€*\n"
-        "*-20G 240€*\n"
-        "*-25G 270€*\n\n"
-        "Consultez le menu avec /start pour plus de détails ! 📋"
-    )
-    success_count = 0
-    failed_count = 0
-    for user_id in USER_IDS:
-        try:
-            await app.bot.send_message(
-                chat_id=user_id,
-                text=announcement_text,
-                parse_mode="Markdown"
-            )
-            success_count += 1
-            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
-            failed_count += 1
-    logger.info(f"Annonce au démarrage - Succès: {success_count}, Échecs: {failed_count}")
-
 # Gestion des clics sur boutons avec log du @username
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -452,7 +374,7 @@ async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="*Impossible de charger l'image. Voici le menu :*",
             reply_markup=KEYBOARD_CACHE["start"])
 
-# Fonction principale pour exécuter l'annonce et démarrer le bot
+# Fonction principale pour démarrer le bot
 async def main():
     try:
         # Charger les utilisateurs au démarrage
@@ -462,12 +384,9 @@ async def main():
         app.add_handler(CommandHandler("photo", send_photo))
         app.add_handler(CommandHandler("listusers", list_users))
         app.add_handler(CommandHandler("stop", stop))
-        app.add_handler(CommandHandler("announce", announce))
         app.add_handler(CallbackQueryHandler(button_click))
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
-        # Envoyer l'annonce à tous les utilisateurs
-        await send_startup_announcement(app)
         # Lancer le bot en mode polling
         await app.run_polling(timeout=30, drop_pending_updates=True)
     except ValueError as e:
