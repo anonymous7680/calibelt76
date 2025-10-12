@@ -324,7 +324,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logger.warning("Fichier kgf_frozen.MP4 non en cache, chargement direct")
                 with open("kgf_frozen.MP4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["kgf_frozen.PM4"] = video
+                    MEDIA_CACHE["kgf_frozen.MP4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*90u kgf Frozen 🧊*\n\n"
