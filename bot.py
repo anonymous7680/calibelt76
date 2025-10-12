@@ -61,7 +61,7 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Barbe Noir 73u 🏴‍☠️", callback_data="barbe_noir")],
         [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
         [InlineKeyboardButton("Popeye armz 🗼🥇", callback_data="popeye_armz")],
-        [InlineKeyboardButton("90u kgf Frozen 🧊", callback_data="kgf_frozen")],  # NOUVEAU PRODUIT AJOUTÉ
+        [InlineKeyboardButton("90u kgf Frozen 🧊", callback_data="kgf_frozen")],
         [InlineKeyboardButton("🔙 Retour", callback_data="menu")]
     ]),
     "hash_back": InlineKeyboardMarkup([
@@ -175,7 +175,7 @@ async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Utilisateurs ayant utilisé le bot :\n{user_list}")
         logger.info(f"Commande /listusers exécutée par admin {user.id} - {len(USER_IDS)} utilisateurs")
 
-# /stop pour se désinscrire des annonces (optionnel, peut être conservé ou supprimé)
+# /stop pour se désinscrire des annonces
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     username = update.effective_user.username
@@ -188,6 +188,50 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Vous n'êtes pas inscrit aux annonces.")
         logger.info(f"Utilisateur {username_str} (ID: {user_id}) a tenté de se désinscrire mais n'était pas inscrit")
+
+# NOUVELLE FONCTION : Annonce pour le nouvel arrivage
+async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    ADMIN_ID = 123456789  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
+    if user.id != ADMIN_ID:
+        await update.message.reply_text("Désolé, cette commande est réservée aux administrateurs.")
+        logger.info(f"Tentative /announce par non-admin {user.id}")
+        return
+    if not USER_IDS:
+        await update.message.reply_text("Aucun utilisateur à notifier.")
+        logger.info("Commande /announce exécutée : aucun utilisateur")
+        return
+    announcement_text = (
+        "*🔥 NOUVEL ARRIVAGE ! 🔥*\n\n"
+        "Découvrez notre nouveau produit : *90u kgf Frozen 🧊*\n\n"
+        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
+        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
+        "*-Lamponi 🍦🍓*\n\n"
+        "*-5G 70€*\n"
+        "*-10G 130€*\n"
+        "*-20G 240€*\n"
+        "*-25G 270€*\n\n"
+        "Consultez le menu avec /start pour plus de détails ! 📋"
+    )
+    success_count = 0
+    failed_count = 0
+    for user_id in USER_IDS:
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=announcement_text,
+                parse_mode="Markdown"
+            )
+            success_count += 1
+            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
+            failed_count += 1
+    await update.message.reply_text(
+        f"Annonce envoyée avec succès à {success_count} utilisateurs. "
+        f"Échecs : {failed_count}."
+    )
+    logger.info(f"Commande /announce exécutée par admin {user.id} - Succès: {success_count}, Échecs: {failed_count}")
 
 # Gestion des clics sur boutons avec log du @username
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -294,7 +338,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except FileNotFoundError:
             logger.error("Fichier popeye_armz.mp4 introuvable")
             await query.message.reply_text("*Erreur : Vidéo popeye_armz.mp4 introuvable.*", parse_mode="Markdown")
-    elif query.data == "kgf_frozen":  # NOUVEAU PRODUIT AJOUTÉ
+    elif query.data == "kgf_frozen":
         reply_markup = KEYBOARD_CACHE["hash_back"]
         try:
             video = MEDIA_CACHE.get("kgf_frozen.mp4")
@@ -403,9 +447,8 @@ if __name__ == "__main__":
         app.add_handler(CommandHandler("photo", send_photo))
         app.add_handler(CommandHandler("listusers", list_users))
         app.add_handler(CommandHandler("stop", stop))
+        app.add_handler(CommandHandler("announce", announce))  # NOUVELLE COMMANDE AJOUTÉE
         app.add_handler(CallbackQueryHandler(button_click))
-        # Commenté pour désactiver les annonces
-        # app.job_queue.run_once(schedule_announcements, when=0)
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
         asyncio.run(app.run_polling(timeout=30, drop_pending_updates=True))
