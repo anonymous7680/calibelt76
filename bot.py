@@ -341,12 +341,12 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "kgf_frozen":
         reply_markup = KEYBOARD_CACHE["hash_back"]
         try:
-            video = MEDIA_CACHE.get("kgf_frozen.mp4")
+            video = MEDIA_CACHE.get("kgf_frozen.MP4")
             if video is None:
-                logger.warning("Fichier kgf_frozen.mp4 non en cache, chargement direct")
-                with open("kgf_frozen.mp4", "rb") as video_file:
+                logger.warning("Fichier kgf_frozen.MP4 non en cache, chargement direct")
+                with open("kgf_frozen.MP4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["kgf_frozen.mp4"] = video
+                    MEDIA_CACHE["kgf_frozen.PM4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*90u kgf Frozen 🧊*\n\n"
