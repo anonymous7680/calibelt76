@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, JobQueue
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 import logging
 import asyncio
 import os
@@ -58,7 +58,6 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("🔙 Retour", callback_data="back")]
     ]),
     "hash": InlineKeyboardMarkup([
-        [InlineKeyboardButton("Barbe Noir 73u 🏴‍☠️", callback_data="barbe_noir")],
         [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
         [InlineKeyboardButton("Popeye armz 🗼🥇", callback_data="popeye_armz")],
         [InlineKeyboardButton("90u kgf Frozen 🧊", callback_data="kgf_frozen")],
@@ -272,27 +271,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_or_edit_message(update, context,
             text="*Choisis une option pour Hash 🍫 :*",
             reply_markup=KEYBOARD_CACHE["hash"])
-    elif query.data == "barbe_noir":
-        reply_markup = KEYBOARD_CACHE["hash_back"]
-        try:
-            video = MEDIA_CACHE.get("barbe_noir.mp4")
-            if video is None:
-                logger.warning("Fichier barbe_noir.mp4 non en cache, chargement direct")
-                with open("barbe_noir.mp4", "rb") as video_file:
-                    video = video_file.read()
-                    MEDIA_CACHE["barbe_noir.mp4"] = video
-            await send_or_edit_message(update, context,
-                text="", video=video,
-                caption="*Barbe Noir 🏴‍☠️*\n\n"
-                        "*73u*\n"
-                        "*- Forbiden 🍑🍓🍉*\n\n"
-                        "*-5G 60€*\n\n"
-                        "*-10G 100€*\n\n"
-                        "*-25G 240€*\n",
-                reply_markup=reply_markup)
-        except FileNotFoundError:
-            logger.error("Fichier barbe_noir.mp4 introuvable")
-            await query.message.reply_text("*Erreur : Vidéo barbe_noir.mp4 introuvable.*", parse_mode="Markdown")
     elif query.data == "hash_dry":
         reply_markup = KEYBOARD_CACHE["hash_back"]
         try:
@@ -438,19 +416,56 @@ async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="*Impossible de charger l'image. Voici le menu :*",
             reply_markup=KEYBOARD_CACHE["start"])
 
+# Fonction pour envoyer l'annonce à tous les utilisateurs au démarrage
+async def send_startup_announcement(app):
+    load_users()  # Charger les utilisateurs depuis users.json
+    if not USER_IDS:
+        logger.info("Aucune annonce envoyée : aucun utilisateur dans USER_IDS")
+        return
+    announcement_text = (
+        "*🔥 NOUVEL ARRIVAGE ! 🔥*\n\n"
+        "Découvrez notre nouveau produit : *90u kgf Frozen 🧊*\n\n"
+        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
+        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
+        "*-Lamponi 🍦🍓*\n\n"
+        "*-5G 70€*\n"
+        "*-10G 130€*\n"
+        "*-20G 240€*\n"
+        "*-25G 270€*\n\n"
+        "Consultez le menu avec /start pour plus de détails ! 📋"
+    )
+    success_count = 0
+    failed_count = 0
+    for user_id in USER_IDS:
+        try:
+            await app.bot.send_message(
+                chat_id=user_id,
+                text=announcement_text,
+                parse_mode="Markdown"
+            )
+            success_count += 1
+            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
+            failed_count += 1
+    logger.info(f"Annonce au démarrage - Succès: {success_count}, Échecs: {failed_count}")
+
 if __name__ == "__main__":
     try:
-        # Charge les utilisateurs au démarrage
+        # Charger les utilisateurs au démarrage
         load_users()
         app = ApplicationBuilder().token(BOT_TOKEN).build()
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("photo", send_photo))
         app.add_handler(CommandHandler("listusers", list_users))
         app.add_handler(CommandHandler("stop", stop))
-        app.add_handler(CommandHandler("announce", announce))  # NOUVELLE COMMANDE AJOUTÉE
+        app.add_handler(CommandHandler("announce", announce))
         app.add_handler(CallbackQueryHandler(button_click))
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
+        # Envoyer l'annonce à tous les utilisateurs
+        asyncio.run(send_startup_announcement(app))
+        # Lancer le bot en mode polling
         asyncio.run(app.run_polling(timeout=30, drop_pending_updates=True))
     except ValueError as e:
         logger.error(f"Erreur : Token invalide - {e}")
