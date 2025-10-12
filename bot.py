@@ -61,6 +61,7 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Barbe Noir 73u 🏴‍☠️", callback_data="barbe_noir")],
         [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
         [InlineKeyboardButton("Popeye armz 🗼🥇", callback_data="popeye_armz")],
+        [InlineKeyboardButton("90u kgf Frozen 🧊", callback_data="kgf_frozen")],  # NOUVEAU PRODUIT AJOUTÉ
         [InlineKeyboardButton("🔙 Retour", callback_data="menu")]
     ]),
     "hash_back": InlineKeyboardMarkup([
@@ -293,6 +294,29 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except FileNotFoundError:
             logger.error("Fichier popeye_armz.mp4 introuvable")
             await query.message.reply_text("*Erreur : Vidéo popeye_armz.mp4 introuvable.*", parse_mode="Markdown")
+    elif query.data == "kgf_frozen":  # NOUVEAU PRODUIT AJOUTÉ
+        reply_markup = KEYBOARD_CACHE["hash_back"]
+        try:
+            video = MEDIA_CACHE.get("kgf_frozen.mp4")
+            if video is None:
+                logger.warning("Fichier kgf_frozen.mp4 non en cache, chargement direct")
+                with open("kgf_frozen.mp4", "rb") as video_file:
+                    video = video_file.read()
+                    MEDIA_CACHE["kgf_frozen.mp4"] = video
+            await send_or_edit_message(update, context,
+                text="", video=video,
+                caption="*90u kgf Frozen 🧊*\n\n"
+                        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
+                        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
+                        "*-Lamponi 🍦🍓*\n\n"
+                        "*-5G 70€*\n\n"
+                        "*-10G 130€*\n\n"
+                        "*-20G 240€*\n\n"
+                        "*-25G 270€*\n",
+                reply_markup=reply_markup)
+        except FileNotFoundError:
+            logger.error("Fichier kgf_frozen.mp4 introuvable")
+            await query.message.reply_text("*Erreur : Vidéo kgf_frozen.mp4 introuvable.*", parse_mode="Markdown")
     elif query.data == "weed":
         await send_or_edit_message(update, context,
             text="*Choisis une option pour Weed 🌳 :*",
