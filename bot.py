@@ -34,6 +34,8 @@ def load_users():
         logger.info(f"Chargement de {len(USER_IDS)} utilisateurs depuis users.json")
     except FileNotFoundError:
         logger.info("Fichier users.json non trouvé, démarrage avec une liste vide")
+        with open("users.json", "w") as f:
+            json.dump([], f)  # Crée un fichier vide si non existant
 
 # Fonction pour sauvegarder les utilisateurs dans un fichier JSON
 def save_users():
@@ -232,6 +234,40 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     logger.info(f"Commande /announce exécutée par admin {user.id} - Succès: {success_count}, Échecs: {failed_count}")
 
+# Fonction pour envoyer l'annonce à tous les utilisateurs au démarrage
+async def send_startup_announcement(app):
+    load_users()  # Charger les utilisateurs depuis users.json
+    if not USER_IDS:
+        logger.info("Aucune annonce envoyée : aucun utilisateur dans USER_IDS")
+        return
+    announcement_text = (
+        "*🔥 NOUVEL ARRIVAGE ! 🔥*\n\n"
+        "Découvrez notre nouveau produit : *90u kgf Frozen 🧊*\n\n"
+        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
+        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
+        "*-Lamponi 🍦🍓*\n\n"
+        "*-5G 70€*\n"
+        "*-10G 130€*\n"
+        "*-20G 240€*\n"
+        "*-25G 270€*\n\n"
+        "Consultez le menu avec /start pour plus de détails ! 📋"
+    )
+    success_count = 0
+    failed_count = 0
+    for user_id in USER_IDS:
+        try:
+            await app.bot.send_message(
+                chat_id=user_id,
+                text=announcement_text,
+                parse_mode="Markdown"
+            )
+            success_count += 1
+            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
+            failed_count += 1
+    logger.info(f"Annonce au démarrage - Succès: {success_count}, Échecs: {failed_count}")
+
 # Gestion des clics sur boutons avec log du @username
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -324,7 +360,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logger.warning("Fichier kgf_frozen.MP4 non en cache, chargement direct")
                 with open("kgf_frozen.MP4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["kgf_frozen.MP4"] = video
+                    MEDIA_CACHE["kgf_frozen.PM4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*90u kgf Frozen 🧊*\n\n"
@@ -416,41 +452,8 @@ async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="*Impossible de charger l'image. Voici le menu :*",
             reply_markup=KEYBOARD_CACHE["start"])
 
-# Fonction pour envoyer l'annonce à tous les utilisateurs au démarrage
-async def send_startup_announcement(app):
-    load_users()  # Charger les utilisateurs depuis users.json
-    if not USER_IDS:
-        logger.info("Aucune annonce envoyée : aucun utilisateur dans USER_IDS")
-        return
-    announcement_text = (
-        "*🔥 NOUVEL ARRIVAGE ! 🔥*\n\n"
-        "Découvrez notre nouveau produit : *90u kgf Frozen 🧊*\n\n"
-        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
-        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
-        "*-Lamponi 🍦🍓*\n\n"
-        "*-5G 70€*\n"
-        "*-10G 130€*\n"
-        "*-20G 240€*\n"
-        "*-25G 270€*\n\n"
-        "Consultez le menu avec /start pour plus de détails ! 📋"
-    )
-    success_count = 0
-    failed_count = 0
-    for user_id in USER_IDS:
-        try:
-            await app.bot.send_message(
-                chat_id=user_id,
-                text=announcement_text,
-                parse_mode="Markdown"
-            )
-            success_count += 1
-            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
-            failed_count += 1
-    logger.info(f"Annonce au démarrage - Succès: {success_count}, Échecs: {failed_count}")
-
-if __name__ == "__main__":
+# Fonction principale pour exécuter l'annonce et démarrer le bot
+async def main():
     try:
         # Charger les utilisateurs au démarrage
         load_users()
@@ -464,8 +467,11 @@ if __name__ == "__main__":
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
         # Envoyer l'annonce à tous les utilisateurs
-        asyncio.run(send_startup_announcement(app))
+        await send_startup_announcement(app)
         # Lancer le bot en mode polling
-        asyncio.run(app.run_polling(timeout=30, drop_pending_updates=True))
+        await app.run_polling(timeout=30, drop_pending_updates=True)
     except ValueError as e:
         logger.error(f"Erreur : Token invalide - {e}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
