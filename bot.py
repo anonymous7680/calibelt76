@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, JobQueue
 import logging
 import asyncio
 import os
@@ -34,8 +34,6 @@ def load_users():
         logger.info(f"Chargement de {len(USER_IDS)} utilisateurs depuis users.json")
     except FileNotFoundError:
         logger.info("Fichier users.json non trouvé, démarrage avec une liste vide")
-        with open("users.json", "w") as f:
-            json.dump([], f)  # Crée un fichier vide si non existant
 
 # Fonction pour sauvegarder les utilisateurs dans un fichier JSON
 def save_users():
@@ -61,10 +59,9 @@ KEYBOARD_CACHE = {
     ]),
     "hash": InlineKeyboardMarkup([
         [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
-        [InlineKeyboardButton("Popeye armz 🗼🥇", callback_data="popeye_armz")],
         [InlineKeyboardButton("90u kgf Frozen 🧊", callback_data="kgf_frozen")],
         [InlineKeyboardButton("🔙 Retour", callback_data="menu")]
-    ]),
+    ]),  # SUPPRESSION DE "Barbe Noir 73u 🏴‍☠️" ET "Popeye armz 🗼🥇"
     "hash_back": InlineKeyboardMarkup([
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Retour 🔙", callback_data="menu")]
@@ -190,6 +187,50 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Vous n'êtes pas inscrit aux annonces.")
         logger.info(f"Utilisateur {username_str} (ID: {user_id}) a tenté de se désinscrire mais n'était pas inscrit")
 
+# Fonction d'annonce pour le nouvel arrivage (envoyée à tous les utilisateurs qui ont utilisé /start)
+async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    ADMIN_ID = 123456789  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
+    if user.id != ADMIN_ID:
+        await update.message.reply_text("Désolé, cette commande est réservée aux administrateurs.")
+        logger.info(f"Tentative /announce par non-admin {user.id}")
+        return
+    if not USER_IDS:
+        await update.message.reply_text("Aucun utilisateur à notifier.")
+        logger.info("Commande /announce exécutée : aucun utilisateur")
+        return
+    announcement_text = (
+        "*🔥 NOUVEL ARRIVAGE ! 🔥*\n\n"
+        "Découvrez notre nouveau produit : *90u kgf Frozen 🧊*\n\n"
+        "*🦊 BY KGF x TERPHOGZ 🦊*\n"
+        "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
+        "*-Lamponi 🍦🍓*\n\n"
+        "*-5G 70€*\n"
+        "*-10G 130€*\n"
+        "*-20G 240€*\n"
+        "*-25G 270€*\n\n"
+        "Consultez le menu avec /start pour plus de détails ! 📋"
+    )
+    success_count = 0
+    failed_count = 0
+    for user_id in USER_IDS:
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=announcement_text,
+                parse_mode="Markdown"
+            )
+            success_count += 1
+            logger.info(f"Annonce envoyée à l'utilisateur {user_id}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'envoi de l'annonce à {user_id}: {e}")
+            failed_count += 1
+    await update.message.reply_text(
+        f"Annonce envoyée avec succès à {success_count} utilisateurs. "
+        f"Échecs : {failed_count}."
+    )
+    logger.info(f"Commande /announce exécutée par admin {user.id} - Succès: {success_count}, Échecs: {failed_count}")
+
 # Gestion des clics sur boutons avec log du @username
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -252,37 +293,16 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except FileNotFoundError:
             logger.error("Fichier hash_dry.mp4 introuvable")
             await query.message.reply_text("*Erreur : Vidéo hash_dry.mp4 introuvable.*", parse_mode="Markdown")
-    elif query.data == "popeye_armz":
-        reply_markup = KEYBOARD_CACHE["hash_back"]
-        try:
-            video = MEDIA_CACHE.get("popeye_armz.mp4")
-            if video is None:
-                logger.warning("Fichier popeye_armz.mp4 non en cache, chargement direct")
-                with open("popeye_armz.mp4", "rb") as video_file:
-                    video = video_file.read()
-                    MEDIA_CACHE["popeye_armz.mp4"] = video
-            await send_or_edit_message(update, context,
-                text="", video=video,
-                caption="*Popeye armz 🗼🥇*\n\n"
-                        "*Egss 10G*\n"
-                        "*- Papaya Dawg 🥭🍉*\n"
-                        "*- Chardonay Biscuit 🍪🍰*\n\n"
-                        "*-5G 80€*\n\n"
-                        "*-10G 160€*\n\n"
-                        "*-25G 340€*\n",
-                reply_markup=reply_markup)
-        except FileNotFoundError:
-            logger.error("Fichier popeye_armz.mp4 introuvable")
-            await query.message.reply_text("*Erreur : Vidéo popeye_armz.mp4 introuvable.*", parse_mode="Markdown")
+    # SUPPRESSION DU BLOC "barbe_noir" ET "popeye_armz"
     elif query.data == "kgf_frozen":
         reply_markup = KEYBOARD_CACHE["hash_back"]
         try:
-            video = MEDIA_CACHE.get("kgf_frozen.MP4")
+            video = MEDIA_CACHE.get("kgf_frozen.mp4")
             if video is None:
                 logger.warning("Fichier kgf_frozen.MP4 non en cache, chargement direct")
                 with open("kgf_frozen.MP4", "rb") as video_file:
                     video = video_file.read()
-                    MEDIA_CACHE["kgf_frozen.PM4"] = video
+                    MEDIA_CACHE["kgf_frozen.MP4"] = video
             await send_or_edit_message(update, context,
                 text="", video=video,
                 caption="*90u kgf Frozen 🧊*\n\n"
@@ -374,23 +394,19 @@ async def send_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="*Impossible de charger l'image. Voici le menu :*",
             reply_markup=KEYBOARD_CACHE["start"])
 
-# Fonction principale pour démarrer le bot
-async def main():
+if __name__ == "__main__":
     try:
-        # Charger les utilisateurs au démarrage
+        # Charge les utilisateurs au démarrage
         load_users()
         app = ApplicationBuilder().token(BOT_TOKEN).build()
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("photo", send_photo))
         app.add_handler(CommandHandler("listusers", list_users))
         app.add_handler(CommandHandler("stop", stop))
+        app.add_handler(CommandHandler("announce", announce))
         app.add_handler(CallbackQueryHandler(button_click))
         print("🚀 Bot lancé.")
         logger.info("Démarrage du bot...")
-        # Lancer le bot en mode polling
-        await app.run_polling(timeout=30, drop_pending_updates=True)
+        asyncio.run(app.run_polling(timeout=30, drop_pending_updates=True))
     except ValueError as e:
         logger.error(f"Erreur : Token invalide - {e}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
