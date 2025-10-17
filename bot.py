@@ -61,7 +61,7 @@ KEYBOARD_CACHE = {
         [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
         [InlineKeyboardButton("90u kgf Frozen 🧊", callback_data="kgf_frozen")],
         [InlineKeyboardButton("🔙 Retour", callback_data="menu")]
-    ]),  # SUPPRESSION DE "Barbe Noir 73u 🏴‍☠️" ET "Popeye armz 🗼🥇"
+    ]),
     "hash_back": InlineKeyboardMarkup([
         [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
         [InlineKeyboardButton("Retour 🔙", callback_data="menu")]
@@ -205,10 +205,10 @@ async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "*🦊 BY KGF x TERPHOGZ 🦊*\n"
         "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
         "*-Lamponi 🍦🍓*\n\n"
-        "*-5G 70€*\n"
-        "*-10G 130€*\n"
-        "*-20G 240€*\n"
-        "*-25G 270€*\n\n"
+        "*-5G 60€*\n"
+        "*-10G 120€*\n"
+        "*-20G 230€*\n"
+        "*-25G 260€*\n\n"
         "Consultez le menu avec /start pour plus de détails ! 📋"
     )
     success_count = 0
@@ -293,7 +293,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except FileNotFoundError:
             logger.error("Fichier hash_dry.mp4 introuvable")
             await query.message.reply_text("*Erreur : Vidéo hash_dry.mp4 introuvable.*", parse_mode="Markdown")
-    # SUPPRESSION DU BLOC "barbe_noir" ET "popeye_armz"
     elif query.data == "kgf_frozen":
         reply_markup = KEYBOARD_CACHE["hash_back"]
         try:
@@ -309,10 +308,10 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         "*🦊 BY KGF x TERPHOGZ 🦊*\n"
                         "*Une Des Meilleurs Farm Sur le marché il est méchant la Team 🔥*\n\n"
                         "*-Lamponi 🍦🍓*\n\n"
-                        "*-5G 70€*\n\n"
-                        "*-10G 130€*\n\n"
-                        "*-20G 240€*\n\n"
-                        "*-25G 270€*\n",
+                        "*-5G 60€*\n\n"
+                        "*-10G 120€*\n\n"
+                        "*-20G 230€*\n\n"
+                        "*-25G 260€*\n",
                 reply_markup=reply_markup)
         except FileNotFoundError:
             logger.error("Fichier kgf_frozen.mp4 introuvable")
