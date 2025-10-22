@@ -277,7 +277,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="*SERVICE MEET-UP🏠*\n\n"
 "*ROUEN 76📍*\n"
 "*Vous pouvez directement passer et meet-up la miff🚶✈️*\n"
-"*Prévenir et faire votre com*and Juste avant de passer en privé.*\n\n"
+"*Prévenir et faire votre commande Juste avant de passer en privé.*\n\n"
 "*Contact 👉@calibelt76 🐺*\n\n",
             reply_markup=KEYBOARD_CACHE["meet_up"])
     elif query.data == "hash":
