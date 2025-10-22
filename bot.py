@@ -275,8 +275,8 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "meet_up":
         await send_or_edit_message(update, context,
             text="SERVICE MEET-UP 🏠*\n\n"
-"*ROUEN 76 📍*\n
-"*Vous pouvez directement passer et meet-up la miff 🚶 ✈️*\n
+"*ROUEN 76 📍*\n"
+"*Vous pouvez directement passer et meet-up la miff 🚶 ✈️*\n"
 "*Prévenir et faire votre com*and Juste avant de passer en privé.*\n\n"
 "*Contact 👉@calibelt76 🐺*\n\n",
             reply_markup=KEYBOARD_CACHE["meet_up"])
