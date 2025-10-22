@@ -1,296 +1,316 @@
-# =============================================
-# CALIBELT 76 - BOT TELEGRAM (VERSION FINALE)
-# Admin ID: 8313494819
-# Annonce braderie Hash Dry 90u intégrée
-# =============================================
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 import logging
 import asyncio
 import os
 import json
-import hashlib
 
-# === CONFIGURATION ===
-BOT_TOKEN = "8210774698:AAEkMMI2hoduhKy1moKgpZ4c37C_rI5MRRI"  # À CHANGER SI TU VEUX
-ADMIN_ID = 8313494819  # TON ID ADMIN
-
-# === LOGGING ===
+# Configuration du logging
 logging.basicConfig(
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO,
     handlers=[
-        logging.FileHandler("bot.log", encoding='utf-8'),
+        logging.FileHandler("bot.log"),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
-# === STOCKAGE UTILISATEURS ===
-USER_IDS = set()
-USERS_FILE = "users.json"
+# NOUVEAU TOKEN
+BOT_TOKEN = "8210774698:AAEkMMI2hoduhKy1moKgpZ4c37C_rI5MRRI"
 
-def load_users():
-    global USER_IDS
-    if os.path.exists(USERS_FILE):
-        try:
-            with open(USERS_FILE, "r", encoding="utf-8") as f:
-                USER_IDS = set(json.load(f))
-            logger.info(f"{len(USER_IDS)} utilisateurs chargés")
-        except:
-            USER_IDS = set()
-    else:
-        logger.info("users.json inexistant → démarrage vide")
-
-def save_users():
-    try:
-        with open(USERS_FILE, "w", encoding="utf-8") as f:
-            json.dump(list(USER_IDS), f)
-        logger.info("users.json sauvegardé")
-    except Exception as e:
-        logger.error(f"Erreur sauvegarde users: {e}")
-
-load_users()
-
-# === CACHE MÉDIAS ===
+# Cache pour les fichiers médias
 MEDIA_CACHE = {}
 
-def load_media(filename):
-    if filename in MEDIA_CACHE:
-        return MEDIA_CACHE[filename]
-    if os.path.exists(filename):
-        with open(filename, "rb") as f:
-            data = f.read()
-            MEDIA_CACHE[filename] = data
-            logger.info(f"Média chargé : {filename}")
-            return data
-    return None
+# Ensemble pour stocker les IDs des utilisateurs
+USER_IDS = set()
 
-# === CLAVIERS ===
-def kb(data):
-    return InlineKeyboardMarkup([[InlineKeyboardButton(text, callback_data=cd)] for text, cd in data])
+# Fonction pour charger les utilisateurs
+def load_users():
+    try:
+        with open("users.json", "r") as f:
+            USER_IDS.update(json.load(f))
+        logger.info(f"Chargement de {len(USER_IDS)} utilisateurs depuis users.json")
+    except FileNotFoundError:
+        logger.info("Fichier users.json non trouvé, démarrage avec une liste vide")
 
-KEYBOARDS = {
-    "start": kb([
-        ("Menu", "menu"),
-        ("Livraison", "delivery"),
-        ("Meet-Up", "meet_up"),
-        ("Contact", "https://t.me/Calibelt76"),
-        ("Canal TG", "https://t.me/+NYNe1lR1HellMGI0"),
-        ("Instagram", "https://instagram.com/calibelt76"),
-        ("Potato", "https://ptwdym158.org/ARRA7Rz09H")
+# Fonction pour sauvegarder les utilisateurs
+def save_users():
+    with open("users.json", "w") as f:
+        json.dump(list(USER_IDS), f)
+    logger.info("Utilisateurs sauvegardés dans users.json")
+
+# Cache des claviers
+KEYBOARD_CACHE = {
+    "start": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Menu", callback_data="menu")],
+        [InlineKeyboardButton("Service Livraison", callback_data="delivery")],
+        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],
+        [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
+        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")],
+        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],
+        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]
     ]),
-    "menu": kb([("Hash", "hash"), ("Weed", "weed"), ("Retour", "back")]),
-    "hash": kb([("Hash Dry 90u", "hash_dry"), ("90u KGF Frozen", "kgf_frozen"), ("Retour", "menu")]),
-    "weed": kb([("CALI US", "cali_us"), ("Retour", "menu")]),
-    "back": kb([("Retour au menu", "start")]),
-    "delivery": kb([("Retour", "back")]),
-    "meet_up": kb([("Retour", "back")])
+    "menu": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Hash", callback_data="hash")],
+        [InlineKeyboardButton("Weed", callback_data="weed")],
+        [InlineKeyboardButton("Retour", callback_data="back")]
+    ]),
+    "hash": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Hash Dry 90u", callback_data="hash_dry")],
+        [InlineKeyboardButton("90u kgf Frozen", callback_data="kgf_frozen")],
+        [InlineKeyboardButton("Retour", callback_data="menu")]
+    ]),
+    "hash_back": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
+        [InlineKeyboardButton("Retour", callback_data="menu")]
+    ]),
+    "weed": InlineKeyboardMarkup([
+        [InlineKeyboardButton("CALI US", callback_data="cali_us")],
+        [InlineKeyboardButton("Retour", callback_data="menu")]
+    ]),
+    "weed_back": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
+        [InlineKeyboardButton("Retour", callback_data="weed")]
+    ]),
+    "back": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Menu", callback_data="menu")],
+        [InlineKeyboardButton("Service Livraison", callback_data="delivery")],
+        [InlineKeyboardButton("Service Meet-Up", callback_data="meet_up")],
+        [InlineKeyboardButton("Contact", url="https://t.me/Calibelt76")],
+        [InlineKeyboardButton("Canal telegram", url="https://t.me/+NYNe1lR1HellMGI0")],
+        [InlineKeyboardButton("Instagram", url="https://www.instagram.com/calibelt76?igsh=b3ZjMGo4dGMxc2tz&utm_source=qr")],
+        [InlineKeyboardButton("Canal Potato", url="https://ptwdym158.org/ARRA7Rz09H")]
+    ]),
+    "meet_up": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Retour", callback_data="back")]
+    ]),
+    "delivery": InlineKeyboardMarkup([
+        [InlineKeyboardButton("Retour", callback_data="back")]
+    ])
 }
 
-# === ENVOI INTELLIGENT ===
-async def send(update: Update, context: ContextTypes.DEFAULT_TYPE, text="", photo=None, video=None, caption="", kb=None):
+# Fonction d'envoi ou édition de message
+async def send_or_edit_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str, reply_markup=None, photo=None, video=None, caption=None):
     chat = update.effective_chat
-    last_id = context.user_data.get("last_msg")
-    if last_id:
-        try: await context.bot.delete_message(chat.id, last_id)
-        except: pass
+    if context.user_data.get('sending_message'):
+        return None
+    context.user_data['sending_message'] = True
+    last_message_id = context.user_data.get('last_bot_message_id')
+    if last_message_id:
+        try:
+            await asyncio.shield(chat.delete_message(last_message_id))
+        except Exception as e:
+            logger.warning(f"Erreur suppression message {last_message_id}: {e}")
     try:
         if photo:
-            msg = await chat.send_photo(photo=photo, caption=caption, reply_markup=kb, parse_mode="Markdown")
+            sent_message = await chat.send_photo(photo=photo, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
         elif video:
-            msg = await chat.send_video(video=video, caption=caption, reply_markup=kb, parse_mode="Markdown")
+            sent_message = await chat.send_video(video=video, caption=caption, reply_markup=reply_markup, parse_mode="Markdown")
         else:
-            msg = await chat.send_message(text=text, reply_markup=kb, parse_mode="Markdown")
-        context.user_data["last_msg"] = msg.message_id
-        return msg
+            sent_message = await chat.send_message(text=text, reply_markup=reply_markup, parse_mode="Markdown")
+        context.user_data['last_bot_message_id'] = sent_message.message_id
+        return sent_message
     except Exception as e:
-        logger.error(f"Erreur envoi: {e}")
-        await chat.send_message("*Erreur temporaire. Réessaie.*", parse_mode="Markdown")
+        logger.error(f"Erreur envoi message: {e}")
+        await chat.send_message("*Une erreur s'est produite. Réessaie.*", parse_mode="Markdown")
         return None
+    finally:
+        context.user_data['sending_message'] = False
 
-# === /start ===
+# /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
+    name = user.first_name
+    username = f"@{user.username}" if user.username else "Pas de @"
     USER_IDS.add(user.id)
     save_users()
-    logger.info(f"/start → {user.full_name} (@{user.username})")
+    logger.info(f"/start de {name} ({username}) - ID: {user.id}")
+    reply_markup = KEYBOARD_CACHE["start"]
+    try:
+        photo = MEDIA_CACHE.get("chat.JPG")
+        if photo is None:
+            with open("chat.JPG", "rb") as image:
+                photo = image.read()
+                MEDIA_CACHE["chat.JPG"] = photo
+        await send_or_edit_message(update, context, text="", reply_markup=reply_markup, photo=photo,
+            caption=(
+                f"*Bienvenue {name} sur notre Bot Télégram*\n\n"
+                "*/start - Redémarrer*\n"
+                "*Consulte le menu ci-dessous*"
+            ))
+    except FileNotFoundError:
+        await send_or_edit_message(update, context,
+            text=f"*Bienvenue {name}*\n*/start - Redémarrer*\n*Utilise les boutons*", reply_markup=reply_markup)
 
-    photo = load_media("start.jpg")
-    await send(
-        update, context,
-        photo=photo,
-        caption=(
-            f"*Yo {user.first_name} !*\n\n"
-            "Utilise le *menu* pour voir les produits\n"
-            "Livraison 76 & Normandie\n"
-            "Meet-up à Rouen"
-        ),
-        kb=KEYBOARDS["start"]
-    )
-
-# === /announce → BRADERIE HASH DRY 90u ===
-async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        await update.message.reply_text("Accès refusé.")
+# /listusers (admin)
+async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    ADMIN_ID = 123456789  # À CHANGER avec ton ID
+    if user.id != ADMIN_ID:
+        await update.message.reply_text("Commande admin uniquement.")
         return
-
     if not USER_IDS:
         await update.message.reply_text("Aucun utilisateur.")
-        return
-
-    text = (
-        "*BRADERIE EXCLUSIVE*\n\n"
-        "*Hash Dry 90u*\n"
-        "*- California*\n"
-        "*- Coco mangue*\n\n"
-        "*120€ les 30G*\n"
-        "*Hash Glassy d’où on brade les prix carré à fumer et faire curée*\n\n"
-        "Dispo *livraison* & *meet-up Rouen*\n"
-        "Contact : @Calibelt76\n"
-        "*Premier arrivé, premier servi !*"
-    )
-
-    media = load_media("hash_promo.jpg") or load_media("hash_promo.mp4") or load_media("hash_dry.mp4")
-
-    success = failed = 0
-    total = len(USER_IDS)
-    await update.message.reply_text(f"Envoi en cours... 0/{total}")
-
-    for i, uid in enumerate(list(USER_IDS)):
-        try:
-            if media:
-                await context.bot.send_photo(uid, photo=media, caption=text, parse_mode="Markdown")
-            else:
-                await context.bot.send_message(uid, text=text, parse_mode="Markdown")
-            success += 1
-            if i % 10 == 0:
-                await update.message.edit_text(f"Envoi : {i}/{total}")
-            await asyncio.sleep(0.035)  # Anti-flood
-        except Exception as e:
-            failed += 1
-            logger.warning(f"Échec {uid}: {e}")
-
-    await update.message.reply_text(
-        f"*Annonce envoyée !*\n"
-        f"Résultat: {success} | Échec: {failed}",
-        parse_mode="Markdown"
-    )
-    logger.info(f"Annonce braderie envoyée → {success}/{total}")
-
-# === BOUTONS ===
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    q = update.callback_query
-    await q.answer()
-    data = q.data
-
-    if data == "start":
-        await start(update, context)
-
-    elif data == "menu":
-        await send(update, context, text="*Choisis :*", kb=KEYBOARDS["menu"])
-
-    elif data == "hash":
-        await send(update, context, text="*Hash dispo :*", kb=KEYBOARDS["hash"])
-
-    elif data == "hash_dry":
-        video = load_media("hash_dry.mp4")
-        await send(
-            update, context,
-            video=video,
-            caption=(
-                "*Hash Dry 90u*\n"
-                "*- California*\n"
-                "*- Coco mangue*\n\n"
-                "5G → 50€\n"
-                "10G → 80€\n"
-                "*30G → 120€ (BRADERIE !)*"
-            ),
-            kb=KEYBOARDS["back"]
-        )
-
-    elif data == "kgf_frozen":
-        video = load_media("kgf_frozen.mp4")
-        await send(
-            update, context,
-            video=video,
-            caption=(
-                "*90u KGF Frozen*\n"
-                "*- Lamponi*\n\n"
-                "5G → 60€\n"
-                "10G → 120€\n"
-                "25G → 260€"
-            ),
-            kb=KEYBOARDS["back"]
-        )
-
-    elif data == "cali_us":
-        video = load_media("cali_us.mp4")
-        await send(
-            update, context,
-            video=video,
-            caption=(
-                "*CALI US*\n"
-                "*- Cherry Bomb*\n\n"
-                "5G → 70€\n"
-                "10G → 140€\n"
-                "25G → 330€"
-            ),
-            kb=KEYBOARDS["back"]
-        )
-
-    elif data == "delivery":
-        await send(
-            update, context,
-            text=(
-                "*LIVRAISON*\n\n"
-                "*76/27/14 + Normandie*\n"
-                "Frais : 10-20€/km\n"
-                "Ex : 100km → 450€\n\n"
-                "*Contact : @Calibelt76*"
-            ),
-            kb=KEYBOARDS["delivery"]
-        )
-
-    elif data == "meet_up":
-        await send(
-            update, context,
-            text=(
-                "*MEET-UP ROUEN*\n\n"
-                "Passe directement\n"
-                "Préviens en privé avant\n\n"
-                "*@Calibelt76*"
-            ),
-            kb=KEYBOARDS["meet_up"]
-        )
-
-# === /stop ===
-async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    if uid in USER_IDS:
-        USER_IDS.remove(uid)
-        save_users()
-        await update.message.reply_text("Tu ne recevras plus d'annonces.")
     else:
-        await update.message.reply_text("Tu n’étais pas inscrit.")
+        user_list = "\n".join([f"ID: {uid}" for uid in USER_IDS])
+        await update.message.reply_text(f"Utilisateurs :\n{user_list}")
 
-# === DEMARRAGE ===
+# /stop
+async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    username = f"@{update.effective_user.username}" if update.effective_user.username else "Pas de @"
+    if user_id in USER_IDS:
+        USER_IDS.remove(user_id)
+        save_users()
+        await update.message.reply_text("Tu ne recevras plus d'annonces. /start pour revenir.")
+        logger.info(f"{username} s'est désinscrit")
+    else:
+        await update.message.reply_text("Tu n'es pas inscrit.")
+
+# ANNONCE AUTOMATIQUE AU DÉMARRAGE
+async def auto_announce(context: ContextTypes.DEFAULT_TYPE):
+    announcement = (
+        "*Hash Dry 90u*\n\n"
+        "- *California* [flag_us]\n"
+        "- *Coco mangue* [coconut] [mango]\n\n"
+        "*120€ 30G hash dry 90U* [handshake]\n"
+        "*Hash Glassy d’où on brade les prix carré à fumer et faire curée* [fire] [check]\n\n"
+        "*/start pour commander*"
+    )
+    success = 0
+    failed = 0
+    for user_id in list(USER_IDS):
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text=announcement,
+                parse_mode="Markdown"
+            )
+            success += 1
+            await asyncio.sleep(0.1)  # Anti-flood
+        except Exception as e:
+            logger.error(f"Échec envoi à {user_id}: {e}")
+            failed += 1
+    logger.info(f"Annonce auto envoyée : {success} OK, {failed} échecs")
+
+# Gestion des boutons
+async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user = update.effective_user
+    username = f"@{user.username}" if user.username else "Pas de @"
+    await query.answer()
+    logger.info(f"Bouton '{query.data}' par {user.first_name} ({username})")
+
+    if query.data == "menu":
+        await send_or_edit_message(update, context, "*Choisis une option :*", reply_markup=KEYBOARD_CACHE["menu"])
+    elif query.data == "delivery":
+        await send_or_edit_message(update, context,
+            "*SERVICE L*VRA*SON*\n\n"
+            "*76 /27/14 et Normandie*\n"
+            "*76 → 30-50€*\n"
+            "*+10-20€/km*\n\n"
+            "*Contact: @calibelt76*",
+            reply_markup=KEYBOARD_CACHE["delivery"])
+    elif query.data == "meet_up":
+        await send_or_edit_message(update, context,
+            "*MEET-UP ROUEN 76*\n\n"
+            "RDV direct, préviens en privé avant.\n\n"
+            "*@calibelt76*",
+            reply_markup=KEYBOARD_CACHE["meet_up"])
+    elif query.data == "hash":
+        await send_or_edit_message(update, context, "*Hash*", reply_markup=KEYBOARD_CACHE["hash"])
+    elif query.data == "hash_dry":
+        try:
+            video = MEDIA_CACHE.get("hash_dry.mp4")
+            if not video:
+                with open("hash_dry.mp4", "rb") as f:
+                    video = f.read()
+                    MEDIA_CACHE["hash_dry.mp4"] = video
+            await send_or_edit_message(update, context, "", video=video,
+                caption="*Hash Dry 90u*\n\n"
+                        "- California\n"
+                        "- Coco mangue\n\n"
+                        "5G 50€ │ 10G 80€ │ 20G 160€ │ 25G 200€ │ 50G 350€",
+                reply_markup=KEYBOARD_CACHE["hash_back"])
+        except FileNotFoundError:
+            await query.message.reply_text("*Vidéo manquante.*")
+    elif query.data == "kgf_frozen":
+        try:
+            video = MEDIA_CACHE.get("kgf_frozen.mp4")
+            if not video:
+                with open("kgf_frozen.MP4", "rb") as f:
+                    video = f.read()
+                    MEDIA_CACHE["kgf_frozen.MP4"] = video
+            await send_or_edit_message(update, context, "", video=video,
+                caption="*90u kgf Frozen*\n\n"
+                        "*Lamponi*\n\n"
+                        "5G 60€ │ 10G 120€ │ 20G 230€ │ 25G 260€",
+                reply_markup=KEYBOARD_CACHE["hash_back"])
+        except FileNotFoundError:
+            await query.message.reply_text("*Vidéo manquante.*")
+    elif query.data == "weed":
+        await send_or_edit_message(update, context, "*Weed*", reply_markup=KEYBOARD_CACHE["weed"])
+    elif query.data == "cali_us":
+        try:
+            video = MEDIA_CACHE.get("cali_us.mp4")
+            if not video:
+                with open("cali_us.mp4", "rb") as f:
+                    video = f.read()
+                    MEDIA_CACHE["cali_us.mp4"] = video
+            await send_or_edit_message(update, context, "", video=video,
+                caption="*CALI US*\n\n"
+                        "*Cherry Bomb*\n\n"
+                        "5G 70€ │ 10G 140€ │ 20G 270€ │ 25G 330€",
+                reply_markup=KEYBOARD_CACHE["weed_back"])
+        except FileNotFoundError:
+            await query.message.reply_text("*Vidéo manquante.*")
+    elif query.data == "back":
+        reply_markup = KEYBOARD_CACHE["back"]
+        try:
+            photo = MEDIA_CACHE.get("chat.JPG")
+            if not photo:
+                with open("chat.JPG", "rb") as f:
+                    photo = f.read()
+                    MEDIA_CACHE["chat.JPG"] = photo
+            await send_or_edit_message(update, context, "", photo=photo,
+                caption=f"*Bienvenue {user.first_name}*\n*/start - Redémarrer*\n*Menu ci-dessous*",
+                reply_markup=reply_markup)
+        except FileNotFoundError:
+            await send_or_edit_message(update, context,
+                f"*Bienvenue {user.first_name}*\n*/start - Redémarrer*", reply_markup=reply_markup)
+
+# Lancement du bot + annonce auto
 if __name__ == "__main__":
-    logger.info("Démarrage du bot CALIBELT 76 - Admin: 8313494819")
-    print("BOT CALIBELT 76 EN LIGNE")
-    print("Envoie /announce pour lancer la braderie Hash Dry 90u !")
-
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("announce", announce))
-    app.add_handler(CommandHandler("stop", stop))
-    app.add_handler(CallbackQueryHandler(button))
-
     try:
-        app.run_polling(drop_pending_updates=True, timeout=30)
-    except KeyboardInterrupt:
-        logger.info("Bot arrêté manuellement")
+        load_users()
+        app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+        app.add_handler(CommandHandler("start", start))
+        app.add_handler(CommandHandler("listusers", list_users))
+        app.add_handler(CommandHandler("stop", stop))
+        app.add_handler(CallbackQueryHandler(button_click))
+
+        # PLANIFIER L'ANNONCE AU DÉMARRAGE
+        async def start_with_announce():
+            await app.initialize()
+            await app.start()
+            await app.updater.start_polling()
+
+            # Attendre que le bot soit prêt
+            await asyncio.sleep(3)
+
+            # Envoyer l'annonce à tous
+            job_queue = app.job_queue
+            job_queue.run_once(auto_announce, when=1)
+
+            print("Bot lancé + Annonce auto envoyée")
+            logger.info("Bot démarré et annonce automatique lancée")
+
+            # Garder le bot en vie
+            await asyncio.Event().wait()
+
+        asyncio.run(start_with_announce())
+
     except Exception as e:
-        logger.critical(f"ERREUR FATALE: {e}")
+        logger.error(f"Erreur critique : {e}")
