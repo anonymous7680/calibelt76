@@ -174,7 +174,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # /listusers pour admin
 async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    ADMIN_ID = 123456789  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
+    ADMIN_ID = 8313494819  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
     if user.id != ADMIN_ID:
         await update.message.reply_text("Désolé, cette commande est réservée aux administrateurs.")
         logger.info(f"Tentative /listusers par non-admin {user.id}")
@@ -204,7 +204,7 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Fonction d'annonce pour le nouvel arrivage (envoyée à tous les utilisateurs qui ont utilisé /start)
 async def announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    ADMIN_ID = 123456789  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
+    ADMIN_ID = 8313494819  # Remplace par ton ID Telegram (@userinfobot pour le trouver)
     if user.id != ADMIN_ID:
         await update.message.reply_text("Désolé, cette commande est réservée aux administrateurs.")
         logger.info(f"Tentative /announce par non-admin {user.id}")
