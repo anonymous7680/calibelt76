@@ -32,7 +32,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Charge les variables d'environnement
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8139705130:AAH-3uo8OMmNS79hzWJFuLwYOdeDacfNch8")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8210774698:AAEkMMI2hoduhKy1moKgpZ4c37C_rI5MRRI")
 
 # Cache pour les fichiers médias
 MEDIA_CACHE = {}
